@@ -1,5 +1,5 @@
---extra-index-url https://download
-.python.org/whl/cpu
+--extra-index-url 
+https://download.python.org/whl/cpu
 streamlit
 ultralytics
 torch
@@ -9,3 +9,5 @@ pandas
 folium
 streamlit-folium
 opencv-python-headless
+numpy
+scikit-learn
