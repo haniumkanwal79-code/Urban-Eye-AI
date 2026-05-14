@@ -1,3 +1,5 @@
+--extra-index-url https://download
+.python.org/whl/cpu
 streamlit
 ultralytics
 torch
