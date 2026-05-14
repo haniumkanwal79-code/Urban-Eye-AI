@@ -48,7 +48,7 @@ def get_base64_image():
 # Load your YOLOv8 model (update path)
 @st.cache_resource
 def load_model():
-    model = YOLO('path/to/your/yolov8_urban_model.pt')  # Update this path
+    model = YOLO('best.pt')  # Update this path
     return model
 
 # Department mapping
