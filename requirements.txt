@@ -1,5 +1,4 @@
---extra-index-url 
-https://download.python.org/whl/cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
 streamlit
 ultralytics
 torch
