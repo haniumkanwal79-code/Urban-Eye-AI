@@ -10,3 +10,5 @@ streamlit-folium
 opencv-contrib-python-headless
 numpy
 scikit-learn
+streamlit-webrtc
+av
