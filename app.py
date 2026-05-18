@@ -1,5 +1,11 @@
 import av
+import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from ultralytics import YOLO
+
+# LOAD MODEL (IMPORTANT)
+model = YOLO("best.pt")
+
 
 class YOLOCamera(VideoTransformerBase):
     def __init__(self):
@@ -20,5 +26,8 @@ if use_camera:
     webrtc_streamer(
         key="live-camera",
         video_transformer_factory=YOLOCamera,
-        media_stream_constraints={"video": True, "audio": False}
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        }
     )
