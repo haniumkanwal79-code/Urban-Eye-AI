@@ -3,199 +3,145 @@ from ultralytics import YOLO
 import cv2
 import numpy as np
 from PIL import Image
-import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from datetime import datetime
+import time
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Urban Eye AI",
+    page_title="Urban AI Pro Dashboard",
     page_icon="🚧",
     layout="wide"
 )
 
-# ---------------- CUSTOM CSS ----------------
+# ---------------- CUSTOM UI ----------------
 st.markdown("""
 <style>
-.main-header {
-    font-size: 3rem;
-    color: #1e3a8a;
-    text-align: center;
-    margin-bottom: 2rem;
+
+html, body, [class*="css"]  {
+    font-family: 'Arial';
 }
-.metric-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 1rem;
-    border-radius: 10px;
+
+.main-title {
+    font-size: 42px;
+    text-align: center;
+    color: #00E5FF;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from {text-shadow: 0 0 10px #00E5FF;}
+    to {text-shadow: 0 0 25px #00E5FF;}
+}
+
+.card {
+    background: rgba(0,0,0,0.6);
+    padding: 15px;
+    border-radius: 15px;
+    margin: 10px 0;
+    border-left: 5px solid #00E5FF;
+}
+
+.metric {
+    font-size: 20px;
     color: white;
-    text-align: center;
 }
+
+.big-number {
+    font-size: 32px;
+    color: #00E5FF;
+    font-weight: bold;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    model = YOLO("yolo11s.pt")   # or best.pt
-    return model
+    return YOLO("best.pt")   # your trained model
 
 model = load_model()
 
-# ---------------- DEPARTMENT MAP ----------------
-DEPARTMENT_MAP = {
-    'pothole': 'Public Works Department',
-    'garbage': 'Sanitation Department',
-    'graffiti': 'Municipal Corporation',
-    'broken_tree': 'Forestry Department',
-    'fallen_pole': 'Electricity Department'
-}
+# ---------------- SESSION STATE ----------------
+if "count" not in st.session_state:
+    st.session_state.count = 0
 
-# ---------------- HELPER FUNCTIONS ----------------
-def process_detections(results):
-    detections = []
+# ---------------- TITLE ----------------
+st.markdown('<div class="main-title">🚧 Urban AI Detection System</div>', unsafe_allow_html=True)
 
-    for r in results.boxes:
-        cls = int(r.cls[0])
-        conf = float(r.conf[0])
+# ---------------- LAYOUT ----------------
+col1, col2, col3 = st.columns([1,2,1])
 
-        detections.append({
-            "class": model.names[cls],
-            "confidence": conf
-        })
+# ---------------- LEFT PANEL ----------------
+with col1:
+    st.markdown("## 📥 Input Panel")
 
-    return detections
+    file = st.file_uploader("Upload Image", type=["jpg","png","jpeg"])
 
-def display_results(detections):
-    st.subheader("📋 Detection Results")
+    run = st.button("🚀 Run Detection")
 
-    if len(detections) == 0:
-        st.warning("No objects detected")
-        return
+# ---------------- CENTER PANEL ----------------
+with col2:
 
-    for det in detections:
-        issue = det["class"]
-        confidence = det["confidence"]
+    st.markdown("## 🧠 Detection Output")
 
-        dept = DEPARTMENT_MAP.get(issue, "General Department")
+    placeholder = st.empty()
 
-        st.success(
-            f"✅ {issue} detected | Confidence: {confidence:.2f} | Assigned: {dept}"
-        )
+# ---------------- RIGHT PANEL ----------------
+with col3:
 
-def generate_report(detections, lat, lng):
-    report = f"""
-URBAN ISSUE DETECTION REPORT
-Generated: {datetime.now()}
+    st.markdown("## 📊 Live Stats")
 
-Location:
-Latitude: {lat}
-Longitude: {lng}
+    st.markdown(f"""
+    <div class="card">
+        <div class="metric">Total Issues Detected</div>
+        <div class="big-number">{st.session_state.count}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-Detected Issues:
-"""
+# ---------------- MAP ----------------
+st.markdown("## 🗺️ Location View")
 
-    for det in detections:
-        report += f"\n- {det['class']} ({det['confidence']:.2f})"
+m = folium.Map(location=[33.6844, 73.0479], zoom_start=12)
+st_folium(m, width=1000, height=400)
 
-    return report
+# ---------------- DETECTION ----------------
+if file and run:
 
-# ---------------- HEADER ----------------
-st.markdown(
-    '<h1 class="main-header">🚧 Urban Eye AI Dashboard</h1>',
-    unsafe_allow_html=True
-)
+    image = Image.open(file)
 
-st.markdown("### AI Powered Urban Issue Detection System")
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
-# ---------------- SIDEBAR ----------------
-st.sidebar.header("📍 Location")
+    with st.spinner("🔍 Detecting issues..."):
+        time.sleep(0.5)  # smooth animation effect
 
-lat = st.sidebar.number_input("Latitude", value=19.0760)
-lng = st.sidebar.number_input("Longitude", value=72.8777)
+        results = model.predict(image, conf=0.5)
 
-# ---------------- MAIN LAYOUT ----------------
-left_col, right_col = st.columns([1, 2])
+        plotted = results[0].plot()
 
-# ---------------- LEFT COLUMN ----------------
-with left_col:
+        detections = results[0].boxes
 
-    st.header("📥 Upload Input")
+        st.session_state.count += len(detections)
 
-    input_type = st.radio(
-        "Choose Input Type",
-        ["Image", "Video", "Live Stream"]
-    )
+    # Show result
+    placeholder.image(plotted, caption="Detected Output", use_container_width=True)
 
-    # ---------- IMAGE ----------
-    if input_type == "Image":
+    # Animated cards
+    for box in detections:
 
-        uploaded_file = st.file_uploader(
-            "Upload Image",
-            type=["jpg", "jpeg", "png"]
-        )
+        cls = int(box.cls[0])
+        conf = float(box.conf[0])
 
-        if uploaded_file:
+        label = model.names[cls]
 
-            image = Image.open(uploaded_file)
+        st.markdown(f"""
+        <div class="card">
+            🚨 Issue: <b>{label}</b><br>
+            🎯 Confidence: <b>{conf:.2f}</b><br>
+            ⏱ Time: {datetime.now().strftime("%H:%M:%S")}
+        </div>
+        """, unsafe_allow_html=True)
 
-            st.image(image, caption="Uploaded Image")
-
-            if st.button("🔍 Detect Objects"):
-
-                results = model.predict(image, conf=0.5)
-
-                detections = process_detections(results[0])
-
-                plotted = results[0].plot()
-
-                st.image(plotted, caption="Detection Result")
-
-                display_results(detections)
-
-                report = generate_report(detections, lat, lng)
-
-                st.download_button(
-                    label="📄 Download Report",
-                    data=report,
-                    file_name="urban_report.txt",
-                    mime="text/plain"
-                )
-
-    # ---------- VIDEO ----------
-    elif input_type == "Video":
-
-        uploaded_video = st.file_uploader(
-            "Upload Video",
-            type=["mp4", "avi", "mov"]
-        )
-
-        if uploaded_video:
-            st.video(uploaded_video)
-
-            st.info("Video detection feature coming soon")
-
-    # ---------- LIVE STREAM ----------
-    elif input_type == "Live Stream":
-
-        st.warning("Live stream feature coming soon")
-
-# ---------------- RIGHT COLUMN ----------------
-with right_col:
-
-    st.header("🗺️ Location Map")
-
-    m = folium.Map(location=[lat, lng], zoom_start=15)
-
-    folium.Marker(
-        [lat, lng],
-        popup="Issue Location",
-        tooltip="Urban Issue",
-        icon=folium.Icon(color="red")
-    ).add_to(m)
-
-    st_folium(m, width=700, height=500)
-
-# ---------------- FOOTER ----------------
-st.markdown("---")
-st.markdown("### 🚀 Powered by YOLO11 + Streamlit")
+    st.success("Detection Completed Successfully 🚀")
