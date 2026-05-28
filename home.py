@@ -153,19 +153,38 @@ input:focus, textarea:focus {
     box-shadow: 0 0 10px rgba(56,189,248,0.5) !important;
 }
 
-/* INPUT BOX FIX */
-input, textarea {
-    color: #000000 !important;   /* text black */
-    background-color: rgba(255,255,255,0.9) !important;
+/* ===== STREAMLIT INPUT FIX (IMPORTANT) ===== */
+
+/* Text input box */
+div[data-testid="stTextInput"] input {
+    color: #111111 !important;
+    background-color: rgba(255,255,255,0.95) !important;
     border-radius: 10px !important;
+    padding: 10px !important;
 }
 
-/* Streamlit input label fix */
-label {
+/* Text area */
+div[data-testid="stTextArea"] textarea {
+    color: #111111 !important;
+    background-color: rgba(255,255,255,0.95) !important;
+}
+
+/* File uploader box */
+div[data-testid="stFileUploader"] {
+    background: rgba(255,255,255,0.08) !important;
+    border-radius: 12px !important;
+    padding: 10px !important;
+}
+
+/* Radio buttons text */
+div[data-testid="stRadio"] label {
     color: #e2e8f0 !important;
-    font-weight: 500;
 }
 
+/* Checkbox text */
+div[data-testid="stCheckbox"] label {
+    color: #e2e8f0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
