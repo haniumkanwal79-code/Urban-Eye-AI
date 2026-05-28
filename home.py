@@ -153,6 +153,19 @@ input:focus, textarea:focus {
     box-shadow: 0 0 10px rgba(56,189,248,0.5) !important;
 }
 
+/* INPUT BOX FIX */
+input, textarea {
+    color: #000000 !important;   /* text black */
+    background-color: rgba(255,255,255,0.9) !important;
+    border-radius: 10px !important;
+}
+
+/* Streamlit input label fix */
+label {
+    color: #e2e8f0 !important;
+    font-weight: 500;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
