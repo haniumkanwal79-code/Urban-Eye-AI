@@ -1,9 +1,8 @@
-import av
 import streamlit as st
+import av
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 from ultralytics import YOLO
 
-# LOAD MODEL (IMPORTANT)
 model = YOLO("best.pt")
 
 
@@ -18,16 +17,19 @@ class YOLOCamera(VideoTransformerBase):
         return annotated
 
 
-st.markdown("## 📷 Live Camera Detection")
+def show_home():
 
-use_camera = st.checkbox("Enable Live Camera")
+    st.title("📷 Live Camera Detection")
 
-if use_camera:
-    webrtc_streamer(
-        key="live-camera",
-        video_transformer_factory=YOLOCamera,
-        media_stream_constraints={
-            "video": True,
-            "audio": False
-        }
-    )
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.rerun()
+
+    use_camera = st.checkbox("Enable Live Camera")
+
+    if use_camera:
+        webrtc_streamer(
+            key="live-camera",
+            video_transformer_factory=YOLOCamera,
+            media_stream_constraints={"video": True, "audio": False}
+        )
