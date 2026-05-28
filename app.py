@@ -89,3 +89,9 @@ with col2:
     )
 
     st.markdown('</div>', unsafe_allow_html=True)
+
+# ROUTING LOGIC
+if st.session_state.logged_in:
+    home.show_home()
+else:
+    login()
