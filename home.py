@@ -16,6 +16,13 @@ st.set_page_config(
     layout="wide"
 )
 
+st.sidebar.title("🚀 Navigation")
+
+menu = st.sidebar.radio(
+    "Go to:",
+    ["Home", "Upload Issue", "Analytics", "Settings"]
+)
+
 # Custom CSS
 st.markdown("""
 <style>
