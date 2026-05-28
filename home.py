@@ -121,6 +121,38 @@ section[data-testid="stSidebar"] {
     border-right: 1px solid rgba(255,255,255,0.1);
 }
 
+.card, .login-box {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* TEXT FIX */
+p, span, label, div {
+    color: #ffffff !important;
+}
+
+/* INPUT BOX FIX */
+input, textarea {
+    color: #000000 !important;
+    background-color: rgba(255,255,255,0.9) !important;
+    border-radius: 10px !important;
+}
+
+/* LABELS */
+label {
+    color: #e2e8f0 !important;
+}
+
+/* INPUT FOCUS EFFECT */
+input:focus, textarea:focus {
+    border: 2px solid #38bdf8 !important;
+    box-shadow: 0 0 10px rgba(56,189,248,0.5) !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
