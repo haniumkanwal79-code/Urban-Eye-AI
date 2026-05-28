@@ -149,6 +149,33 @@ m1.metric("Total Complaints", "1,240")
 m2.metric("Resolved", "980")
 m3.metric("Pending", "260")
 
+st.write("")
+
+st.markdown("## 📥 Upload or Capture Input")
+
+input_type = st.radio(
+    "Select Input Type:",
+    ("Image", "Video", "Live Camera")
+)
+
+# IMAGE UPLOAD
+if input_type == "Image":
+    image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+
+    if image is not None:
+        st.image(image, caption="Uploaded Image", use_container_width=True)
+
+# VIDEO UPLOAD
+elif input_type == "Video":
+    video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
+
+    if video is not None:
+        st.video(video)
+
+# LIVE CAMERA PLACEHOLDER
+elif input_type == "Live Camera":
+    st.warning("Live Camera feature will be activated with YOLO module")
+    
 # Button
 st.write("")
 st.button("View Reports")
