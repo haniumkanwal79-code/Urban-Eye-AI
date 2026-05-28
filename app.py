@@ -1,4 +1,5 @@
 import streamlit as st
+import home   # 👈 important: home.py import
 
 # Page Configuration
 st.set_page_config(
@@ -6,6 +7,15 @@ st.set_page_config(
     page_icon="🔐",
     layout="centered"
 )
+
+# SESSION STATE INIT
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# ROUTING LOGIC (IMPORTANT)
+if st.session_state.logged_in:
+    home.show_home()
+    st.stop()
 
 # Custom CSS
 st.markdown("""
@@ -78,8 +88,9 @@ with col2:
 
     if st.button("Login"):
         if username == "admin" and password == "1234":
+            st.session_state.logged_in = True
             st.success("✅ Login Successful")
-            st.balloons()
+            st.rerun()   # 👈 redirect trigger
         else:
             st.error("❌ Invalid Username or Password")
 
@@ -89,9 +100,3 @@ with col2:
     )
 
     st.markdown('</div>', unsafe_allow_html=True)
-
-# ROUTING LOGIC
-if st.session_state.logged_in:
-    home.show_home()
-else:
-    login()
