@@ -33,6 +33,22 @@ html, body, [class*="css"] {
     color: white;
 }
 
+/* FORCE ALL TEXT WHITE */
+p, span, label, div {
+    color: #ffffff !important;
+}
+
+/* Streamlit default text fix */
+.stMarkdown, .stText, .stRadio, .stCheckbox {
+    color: #ffffff !important;
+}
+
+/* Input text color */
+input, textarea {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+}
+
 /* Remove Streamlit default spacing */
 .block-container {
     padding-top: 2rem;
