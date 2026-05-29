@@ -14,6 +14,12 @@ def show_home():
         st.session_state.logged_in = False
         st.rerun()
 
+    from ultralytics import YOLO
+import numpy as np
+import cv2
+
+model = YOLO("best.pt")
+
     # Sidebar
     st.sidebar.title("🚀 Navigation")
 
@@ -198,35 +204,50 @@ def show_home():
             ("Image", "Video", "Live Camera")
         )
 
-        # IMAGE
-        if input_type == "Image":
-            image = st.file_uploader(
-                "Upload Image",
-                type=["jpg", "jpeg", "png"]
-            )
+       if input_type == "Image":
+    image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
-            if image is not None:
-                st.image(
-                    image,
-                    caption="Uploaded Image",
-                    use_container_width=True
-                )
+    if image is not None:
+        file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+        img = cv2.imdecode(file_bytes, 1)
 
+        results = model(img)
+        annotated = results[0].plot()
+
+        st.image(annotated, caption="Detected Image", use_container_width=True)
+        
         # VIDEO
         elif input_type == "Video":
-            video = st.file_uploader(
-                "Upload Video",
-                type=["mp4", "mov", "avi"]
-            )
+            video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
 
-            if video is not None:
-                st.video(video)
+if video is not None:
+    st.video(video)
+    st.warning("Video detection will be added in next upgrade 🚀")
 
-        # LIVE CAMERA
-        elif input_type == "Live Camera":
-            st.warning(
-                "Live Camera feature will be activated with YOLO module"
-            )
+       elif input_type == "Live Camera":
+
+    from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+
+    class YOLOCamera(VideoTransformerBase):
+        def __init__(self):
+            self.model = model
+
+        def transform(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+
+            results = self.model(img)
+            annotated = results[0].plot()
+
+            return annotated
+
+    webrtc_streamer(
+        key="yolo-live",
+        video_transformer_factory=YOLOCamera,
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        }
+    )
 
         st.write("")
         st.button("View Reports")
