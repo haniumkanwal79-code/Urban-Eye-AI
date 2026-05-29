@@ -202,8 +202,7 @@ if menu == "Home":
             "Select Input Type:",
             ("Image", "Video", "Live Camera")
         )
-
-       if input_type == "Image":
+if input_type == "Image":
     image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
     if image is not None:
