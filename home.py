@@ -196,8 +196,10 @@ div[data-testid="stCheckbox"] label {
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown('<div class="main-title">🚀 Urban Issue Reporter</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Smart AI-Based Complaint & Monitoring System</div>', unsafe_allow_html=True)
+if menu == "Home":
+
+    st.markdown('<div class="main-title">🚀 Urban Issue Reporter</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">Smart AI-Based Complaint & Monitoring System</div>', unsafe_allow_html=True)
 
 # Cards
 col1, col2, col3 = st.columns(3)
@@ -266,3 +268,15 @@ elif input_type == "Live Camera":
 # Button
 st.write("")
 st.button("View Reports")
+
+elif menu == "Upload Issue":
+    st.title("📥 Upload Issue")
+    st.write("Here user can upload image/video/live camera input")
+
+elif menu == "Analytics":
+    st.title("📊 Analytics Dashboard")
+    st.write("Graphs and statistics will be shown here")
+
+elif menu == "Settings":
+    st.title("⚙️ Settings")
+    st.write("User preferences and system settings")
