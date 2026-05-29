@@ -268,9 +268,14 @@ elif input_type == "Live Camera":
 # Button
 st.write("")
 st.button("View Reports")
+if menu == "Home":
+
+    st.button("View Reports")
 
 elif menu == "Upload Issue":
-    st.title("📥 Upload Issue")
+
+    st.title("Upload")
+
     st.write("Here user can upload image/video/live camera input")
 
 elif menu == "Analytics":
