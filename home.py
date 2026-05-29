@@ -143,7 +143,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
     # ================= HOME PAGE =================
-    if menu == "Home":
+if menu == "Home":
 
         # Header
         st.markdown(
