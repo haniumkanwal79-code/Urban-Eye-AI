@@ -14,10 +14,9 @@ def show_home():
         st.session_state.logged_in = False
         st.rerun()
 
-    from ultralytics import YOLO
+from ultralytics import YOLO
 import numpy as np
 import cv2
-
 model = YOLO("best.pt")
 
     # Sidebar
@@ -224,7 +223,7 @@ if video is not None:
     st.video(video)
     st.warning("Video detection will be added in next upgrade 🚀")
 
-       elif input_type == "Live Camera":
+       eelif input_type == "Live Camera":
 
     from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
@@ -234,19 +233,13 @@ if video is not None:
 
         def transform(self, frame):
             img = frame.to_ndarray(format="bgr24")
-
             results = self.model(img)
-            annotated = results[0].plot()
-
-            return annotated
+            return results[0].plot()
 
     webrtc_streamer(
         key="yolo-live",
         video_transformer_factory=YOLOCamera,
-        media_stream_constraints={
-            "video": True,
-            "audio": False
-        }
+        media_stream_constraints={"video": True, "audio": False}
     )
 
         st.write("")
