@@ -199,9 +199,11 @@ if menu == "Home":
         st.markdown("## 📥 Upload or Capture Input")
 
         input_type = st.radio(
-            "Select Input Type:",
-            ("Image", "Video", "Live Camera")
-        )
+    "Select Input Type:",
+    ("Image", "Video", "Live Camera")
+)
+
+# ================= IMAGE =================
 if input_type == "Image":
     image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
@@ -213,16 +215,17 @@ if input_type == "Image":
         annotated = results[0].plot()
 
         st.image(annotated, caption="Detected Image", use_container_width=True)
-        
-        # VIDEO
-        elif input_type == "Video":
-            video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
 
-if video is not None:
-    st.video(video)
-    st.warning("Video detection will be added in next upgrade 🚀")
+# ================= VIDEO =================
+elif input_type == "Video":
+    video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
 
-       eelif input_type == "Live Camera":
+    if video is not None:
+        st.video(video)
+        st.warning("Video detection will be added in next upgrade 🚀")
+
+# ================= LIVE CAMERA =================
+elif input_type == "Live Camera":
 
     from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
@@ -238,12 +241,14 @@ if video is not None:
     webrtc_streamer(
         key="yolo-live",
         video_transformer_factory=YOLOCamera,
-        media_stream_constraints={"video": True, "audio": False}
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        }
     )
 
-        st.write("")
-        st.button("View Reports")
-
+st.write("")
+st.button("View Reports")
     # ================= UPLOAD PAGE =================
     elif menu == "Upload Issue":
 
