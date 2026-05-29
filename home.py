@@ -20,7 +20,7 @@ import cv2
 model = YOLO("best.pt")
 
     # Sidebar
-    st.sidebar.title("🚀 Navigation")
+st.sidebar.title("🚀 Navigation")
 
     menu = st.sidebar.radio(
         "Go to:",
