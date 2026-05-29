@@ -249,29 +249,27 @@ elif input_type == "Live Camera":
 
 st.write("")
 st.button("View Reports")
-    # ================= UPLOAD PAGE =================
-    elif menu == "Upload Issue":
 
-        st.title("📥 Upload Issue")
+   
+# ================= UPLOAD PAGE =================
+elif menu == "Upload Issue":
 
-        st.write(
-            "Here user can upload image/video/live camera input"
-        )
+    st.title("📥 Upload Issue")
 
-    # ================= ANALYTICS PAGE =================
-    elif menu == "Analytics":
+    st.write("Here user can upload image/video/live camera input")
 
-        st.title("📊 Analytics Dashboard")
 
-        st.write(
-            "Graphs and statistics will be shown here"
-        )
+# ================= ANALYTICS PAGE =================
+elif menu == "Analytics":
 
-    # ================= SETTINGS PAGE =================
-    elif menu == "Settings":
+    st.title("📊 Analytics Dashboard")
 
-        st.title("⚙️ Settings")
+    st.write("Graphs and statistics will be shown here")
 
-        st.write(
-            "User preferences and system settings"
-        )
+
+# ================= SETTINGS PAGE =================
+elif menu == "Settings":
+
+    st.title("⚙️ Settings")
+
+    st.write("User preferences and system settings")
