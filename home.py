@@ -22,7 +22,7 @@ model = YOLO("best.pt")
     # Sidebar
 st.sidebar.title("🚀 Navigation")
 
-    menu = st.sidebar.radio(
+menu = st.sidebar.radio(
         "Go to:",
         ["Home", "Upload Issue", "Analytics", "Settings"]
     )
