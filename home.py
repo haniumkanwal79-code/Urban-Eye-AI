@@ -28,7 +28,7 @@ menu = st.sidebar.radio(
     )
 
     # Custom CSS
-    st.markdown("""
+st.markdown("""
     <style>
 
     /* Import Google Font */
