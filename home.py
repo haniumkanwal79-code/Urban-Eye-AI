@@ -252,12 +252,14 @@ st.button("View Reports")
 
    
 # ================= UPLOAD PAGE =================
+if menu == "Home":
+
+    st.markdown("Home Page")
+
 elif menu == "Upload Issue":
 
     st.title("📥 Upload Issue")
-
     st.write("Here user can upload image/video/live camera input")
-
 
 # ================= ANALYTICS PAGE =================
 elif menu == "Analytics":
