@@ -7,6 +7,7 @@ import cv2
 model = YOLO("best.pt")
 
 def show_home():
+     st.write("HOME PAGE LOADED")
     
 # Page Config
     st.set_page_config(
