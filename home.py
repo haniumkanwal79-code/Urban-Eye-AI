@@ -9,7 +9,7 @@ model = YOLO("best.pt")
 def show_home():
     
 # Page Config
-st.set_page_config(
+    st.set_page_config(
     page_title="Modern Dashboard",
     page_icon="🚀",
     layout="wide"
