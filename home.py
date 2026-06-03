@@ -18,8 +18,6 @@ if st.button("Logout"):
     st.session_state.logged_in = False
     st.rerun()
 
-
-
 # Sidebar Navigation
 st.sidebar.title("🚀 Navigation")
 menu = st.sidebar.radio(
