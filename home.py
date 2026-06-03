@@ -7,8 +7,7 @@ model = YOLO("best.pt")
 
 
 def show_home():
-
-    # ================= SIDEBAR =================
+ # ================= SIDEBAR =================
     st.sidebar.title("🚀 Navigation")
 
     menu = st.sidebar.radio(
@@ -16,18 +15,25 @@ def show_home():
         ["Home", "Upload Issue", "Analytics", "Settings"]
     )
 
-    # ================= HOME =================
+    # ================= PAGE ROUTING =================
     if menu == "Home":
         st.title("🏠 Dashboard")
         st.write("Welcome to Urban Issue Reporter 🚀")
-        # Page Config (ONLY ONCE, INSIDE FUNCTION)
-    st.set_page_config(
-        page_title="Modern Dashboard",
-        page_icon="🚀",
-        layout="wide"
-    )
 
-    st.write("HOME PAGE LOADED")
+        st.write("HOME PAGE LOADED")
+
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
+
+    elif menu == "Upload Issue":
+        st.title("📥 Upload Issue")
+
+    elif menu == "Analytics":
+        st.title("📊 Analytics")
+
+    elif menu == "Settings":
+        st.title("⚙️ Settings")
 
     # Logout Button
     if st.button("Logout"):
