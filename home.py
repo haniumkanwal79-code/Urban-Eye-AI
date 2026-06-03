@@ -3,6 +3,9 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 
+# Initialize YOLO model
+model = YOLO("best.pt")
+
 # Page Config
 st.set_page_config(
     page_title="Modern Dashboard",
@@ -15,8 +18,7 @@ if st.button("Logout"):
     st.session_state.logged_in = False
     st.rerun()
 
-# Initialize YOLO model
-model = YOLO("best.pt")
+
 
 # Sidebar Navigation
 st.sidebar.title("🚀 Navigation")
