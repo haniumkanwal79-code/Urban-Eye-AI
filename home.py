@@ -1,32 +1,52 @@
+
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 import cv2
 
-# Initialize YOLO model
 model = YOLO("best.pt")
 
 def show_home():
-     st.write("HOME PAGE LOADED")
-    
-# Page Config
+
+    # Page Config (ONLY ONCE, INSIDE FUNCTION)
     st.set_page_config(
-    page_title="Modern Dashboard",
-    page_icon="🚀",
-    layout="wide"
-)
+        page_title="Modern Dashboard",
+        page_icon="🚀",
+        layout="wide"
+    )
 
-# Logout Button
-if st.button("Logout"):
-    st.session_state.logged_in = False
-    st.rerun()
+    st.write("HOME PAGE LOADED")
 
-# Sidebar Navigation
-st.sidebar.title("🚀 Navigation")
-menu = st.sidebar.radio(
-    "Go to:",
-    ["Home", "Upload Issue", "Analytics", "Settings"]
-)
+    # Logout Button
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.rerun()
+
+    # Sidebar Navigation
+    st.sidebar.title("🚀 Navigation")
+
+    menu = st.sidebar.radio(
+        "Go to:",
+        ["Home", "Upload Issue", "Analytics", "Settings"]
+    )
+
+    # ================= HOME =================
+    if menu == "Home":
+        st.title("🏠 Dashboard")
+        st.write("Welcome to Home Page 🚀")
+
+    # ================= UPLOAD =================
+    elif menu == "Upload Issue":
+        st.title("📥 Upload Issue")
+        st.write("Upload image/video/live camera")
+
+    # ================= ANALYTICS =================
+    elif menu == "Analytics":
+        st.title("📊 Analytics Dashboard")
+
+    # ================= SETTINGS =================
+    elif menu == "Settings":
+        st.title("⚙️ Settings")
 
 # Custom CSS
 st.markdown("""
