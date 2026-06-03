@@ -6,6 +6,8 @@ import cv2
 # Initialize YOLO model
 model = YOLO("best.pt")
 
+def show_home():
+    
 # Page Config
 st.set_page_config(
     page_title="Modern Dashboard",
