@@ -5,7 +5,6 @@ import cv2
 
 model = YOLO("best.pt")
 
-
 def show_home():
  # ================= SIDEBAR =================
     st.sidebar.title("🚀 Navigation")
