@@ -3,9 +3,7 @@ import sqlite3
 DB_NAME = "issues.db"
 
 def get_connection():
-    conn = sqlite3.connect(DB_NAME, check_same_thread=False)
-    return conn
-
+    return sqlite3.connect(DB_NAME, check_same_thread=False)
 
 def create_table():
     conn = get_connection()
@@ -17,7 +15,7 @@ def create_table():
             title TEXT,
             category TEXT,
             image_path TEXT,
-            status TEXT DEFAULT 'Pending',
+            status TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
