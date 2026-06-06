@@ -1,0 +1,90 @@
+/* ================= GLOBAL ================= */
+body {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ================= SIDEBAR ================= */
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    padding: 20px;
+}
+
+/* Sidebar Title */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #38bdf8;
+}
+
+/* Radio Buttons */
+.stRadio label {
+    font-size: 15px;
+    color: #e2e8f0;
+}
+
+/* Buttons */
+.stButton button {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: white;
+    border-radius: 10px;
+    padding: 8px 16px;
+    border: none;
+    transition: 0.3s;
+}
+
+.stButton button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #6366f1, #38bdf8);
+}
+
+/* ================= METRICS ================= */
+[data-testid="stMetricValue"] {
+    font-size: 28px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #94a3b8;
+}
+
+/* ================= CARDS / CONTAINERS ================= */
+div.block-container {
+    padding-top: 2rem;
+}
+
+/* Info / Success / Warning boxes */
+.stAlert {
+    border-radius: 10px;
+}
+
+/* ================= FILE UPLOADER ================= */
+[data-testid="stFileUploader"] {
+    border: 2px dashed #38bdf8;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* ================= RADIO / SELECT ================= */
+.stSelectbox, .stRadio {
+    background-color: #1f2937;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* ================= HEADINGS ================= */
+h1, h2, h3 {
+    color: #f8fafc;
+}
+
+/* ================= BAR CHART ================= */
+canvas {
+    border-radius: 10px;
+}
+
+/* ================= FOOTER SPACING ================= */
+footer {
+    visibility: hidden;
+}
