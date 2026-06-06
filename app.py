@@ -1,3 +1,6 @@
+import database as db
+
+db.create_table()
 import streamlit as st
 
 # SAFE IMPORT
