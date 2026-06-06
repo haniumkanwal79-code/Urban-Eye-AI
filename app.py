@@ -72,11 +72,17 @@ with col2:
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if username == "admin" and password == "1234":
-            st.session_state.logged_in = True
-            st.success("Login Successful")
-            st.rerun()
-        else:
-            st.error("Invalid Credentials")
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    if username == "admin" and password == "1234":
+
+        st.session_state.logged_in = True
+
+        # FORCE REFRESH SAFE WAY
+        st.success("Login Successful")
+
+        st.switch_page  # fallback safe (if available)
+
+        st.rerun()
+
+    else:
+        st.error("Invalid Credentials")
