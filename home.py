@@ -6,6 +6,18 @@ import cv2
 model = YOLO("best.pt")
 
 def show_home():
+ # ================= HOME PAGE =================
+if menu == "Home":
+    # Header
+    st.markdown(
+        '<div class="main-title">🚀 Urban Issue Reporter</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<div class="subtitle">Smart AI-Based Complaint & Monitoring System</div>',
+        unsafe_allow_html=True
+    )
+
  # ================= SIDEBAR =================
     st.sidebar.title("🚀 Navigation")
 
@@ -151,18 +163,6 @@ div[data-testid="stRadio"] label {
 }
 </style>
 """, unsafe_allow_html=True)
-
-# ================= HOME PAGE =================
-if menu == "Home":
-    # Header
-    st.markdown(
-        '<div class="main-title">🚀 Urban Issue Reporter</div>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<div class="subtitle">Smart AI-Based Complaint & Monitoring System</div>',
-        unsafe_allow_html=True
-    )
 
     # Cards
     col1, col2, col3 = st.columns(3)
