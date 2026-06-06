@@ -10,6 +10,10 @@ def load_css():
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
+import database as db
+
+db.create_table()
+
 # ================= MAIN FUNCTION =================
 def show_home():
 
@@ -78,41 +82,71 @@ def show_home():
             ["Image", "Video", "Live Camera"]
         )
 
-        if input_type == "Image":
+       if input_type == "Image":
 
-            image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+    image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
-            if image is not None:
-                file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
-                img = cv2.imdecode(file_bytes, 1)
+    if image is not None:
 
-                results = model(img)
-                st.image(results[0].plot(), use_container_width=True)
+        # ================= IMAGE PROCESSING =================
+        file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+        img = cv2.imdecode(file_bytes, 1)
 
-        elif input_type == "Video":
+        results = model(img)
+        annotated = results[0].plot()
 
-            video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
+        st.image(annotated, use_container_width=True)
 
-            if video is not None:
-                st.video(video)
-                st.warning("Video processing pipeline coming soon 🚀")
+        # ================= DATABASE INTEGRATION =================
+        import os
+        from datetime import datetime
+        import database as db
 
-        elif input_type == "Live Camera":
+        os.makedirs("uploads", exist_ok=True)
 
-            class YOLOCamera(VideoTransformerBase):
-                def __init__(self):
-                    self.model = model
+        file_name = f"uploads/{datetime.now().timestamp()}.jpg"
+        with open(file_name, "wb") as f:
+            f.write(image.getbuffer())
 
-                def transform(self, frame):
-                    img = frame.to_ndarray(format="bgr24")
-                    results = self.model(img)
-                    return results[0].plot()
+        conn = db.get_connection()
+        c = conn.cursor()
 
-            webrtc_streamer(
-                key="live",
-                video_transformer_factory=YOLOCamera,
-                media_stream_constraints={"video": True, "audio": False}
-            )
+        c.execute("""
+            INSERT INTO issues (title, category, image_path, status)
+            VALUES (?, ?, ?, ?)
+        """, ("Road Issue", "Road", file_name, "Pending"))
+
+        conn.commit()
+        conn.close()
+
+        st.success("🚀 Issue saved to database successfully!")
+
+
+elif input_type == "Video":
+
+    video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
+
+    if video is not None:
+        st.video(video)
+        st.warning("Video processing pipeline coming soon 🚀")
+
+
+elif input_type == "Live Camera":
+
+    class YOLOCamera(VideoTransformerBase):
+        def __init__(self):
+            self.model = model
+
+        def transform(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+            results = self.model(img)
+            return results[0].plot()
+
+    webrtc_streamer(
+        key="live",
+        video_transformer_factory=YOLOCamera,
+        media_stream_constraints={"video": True, "audio": False}
+    )
 
     # ================= ANALYTICS =================
     elif menu == "📊 Analytics":
