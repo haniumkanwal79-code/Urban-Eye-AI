@@ -4,6 +4,11 @@ import numpy as np
 import cv2
 import pandas as pd
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+def load_css():
+    with open("style.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css()
 
 # ================= MODEL =================
 model = YOLO("best.pt")
