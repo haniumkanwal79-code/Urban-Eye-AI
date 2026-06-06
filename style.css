@@ -1,76 +1,119 @@
-/* ================= GLOBAL ================= */
+/* ================= BASE ================= */
 body {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #0a0f1c;
+    color: #e5e7eb;
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* ================= SIDEBAR ================= */
+.stApp {
+    background-color: #0a0f1c;
+}
+
+/* ================= SIDEBAR GLASS EFFECT ================= */
 section[data-testid="stSidebar"] {
-    background-color: #ffffff;
-    border-right: 1px solid #e2e8f0;
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255,255,255,0.08);
     padding: 20px;
 }
 
 /* Sidebar text */
 section[data-testid="stSidebar"] * {
-    color: #0f172a;
+    color: #e5e7eb;
 }
 
-/* ================= BUTTONS ================= */
+/* Sidebar hover items */
+section[data-testid="stSidebar"] label:hover {
+    color: #38bdf8;
+    transition: 0.2s;
+}
+
+/* ================= TITLE STYLE ================= */
+h1, h2, h3 {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+/* ================= BUTTONS (GLOW EFFECT) ================= */
 .stButton button {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
     color: white;
-    border-radius: 8px;
-    padding: 8px 14px;
+    border-radius: 12px;
+    padding: 8px 16px;
     border: none;
-    transition: 0.2s ease-in-out;
+    font-weight: 500;
+    transition: 0.25s ease-in-out;
+    box-shadow: 0px 0px 0px transparent;
 }
 
 .stButton button:hover {
-    background-color: #1d4ed8;
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0px 0px 15px rgba(56, 189, 248, 0.4);
 }
 
-/* ================= METRICS ================= */
-[data-testid="stMetricValue"] {
-    font-size: 26px;
-    font-weight: 700;
-    color: #2563eb;
-}
-
-[data-testid="stMetricLabel"] {
-    color: #64748b;
-}
-
-/* ================= CARDS FEEL ================= */
+/* ================= GLASS CARDS ================= */
 div.block-container {
-    padding-top: 2rem;
+    padding: 2rem 2rem;
 }
 
-/* ================= INPUTS ================= */
-.stTextInput input,
-.stSelectbox,
-.stRadio {
-    border-radius: 8px;
+/* metric cards look */
+[data-testid="stMetric"] {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 15px;
+    border-radius: 14px;
+    backdrop-filter: blur(6px);
+}
+
+/* metric value */
+[data-testid="stMetricValue"] {
+    font-size: 28px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+/* metric label */
+[data-testid="stMetricLabel"] {
+    color: #94a3b8;
+}
+
+/* ================= INPUT FIELDS ================= */
+input, textarea, select {
+    background-color: rgba(255,255,255,0.05) !important;
+    color: #e5e7eb !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 /* ================= FILE UPLOADER ================= */
 [data-testid="stFileUploader"] {
-    border: 2px dashed #2563eb;
-    border-radius: 10px;
+    border: 2px dashed #38bdf8;
+    background: rgba(255,255,255,0.03);
     padding: 15px;
-    background-color: #f1f5f9;
+    border-radius: 12px;
 }
 
-/* ================= HEADINGS ================= */
-h1, h2, h3 {
-    color: #0f172a;
-}
-
-/* ================= CHART CLEAN LOOK ================= */
-canvas {
+/* ================= RADIO / SELECT ================= */
+.stRadio, .stSelectbox {
+    background: rgba(255,255,255,0.03);
     border-radius: 10px;
+    padding: 10px;
+}
+
+/* ================= ALERT BOXES ================= */
+.stAlert {
+    border-radius: 12px;
+}
+
+/* ================= CHARTS ================= */
+canvas {
+    border-radius: 14px;
+}
+
+/* ================= CARD HOVER EFFECT ================= */
+div[data-testid="stHorizontalBlock"]:hover {
+    transform: translateY(-2px);
+    transition: 0.2s ease-in-out;
 }
 
 /* ================= REMOVE FOOTER ================= */
