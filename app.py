@@ -1,17 +1,23 @@
 import streamlit as st
+
+# SAFE IMPORT
 import home
 
+# ================= PAGE CONFIG =================
 st.set_page_config(
-    page_title="Modern Login Page",
-    page_icon="🔐",
+    page_title="Urban Issue Reporter",
+    page_icon="🚀",
     layout="centered"
 )
 
-# SESSION STATE INIT
+# ================= SESSION STATE INIT =================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# ================= ROUTING =================
+if "user" not in st.session_state:
+    st.session_state.user = None
+
+# ================= LOGIN SUCCESS ROUTING =================
 if st.session_state.logged_in:
     home.show_home()
     st.stop()
@@ -27,6 +33,7 @@ body {
     background: linear-gradient(to right, #0f172a, #1e293b);
 }
 
+/* login card */
 .login-box {
     background-color: white;
     padding: 40px;
@@ -34,27 +41,29 @@ body {
     box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
 }
 
+/* title */
 .title {
     text-align: center;
-    font-size: 40px;
+    font-size: 36px;
     font-weight: bold;
     color: #2563eb;
-    margin-bottom: 10px;
 }
 
+/* subtitle */
 .subtitle {
     text-align: center;
     color: gray;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
+/* button */
 .stButton > button {
     width: 100%;
     background-color: #2563eb;
     color: white;
     border-radius: 10px;
     height: 45px;
-    font-size: 18px;
+    font-size: 16px;
     border: none;
 }
 
@@ -70,19 +79,18 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
-    st.markdown('<div class="title">Welcome Back 👋</div>', unsafe_allow_html=True)
-    st.markdown('<div class="subtitle">Login to continue</div>', unsafe_allow_html=True)
+    st.markdown('<div class="title">🚀 Welcome Back</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">Login to Urban Issue Reporter</div>', unsafe_allow_html=True)
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    login_btn = st.button("Login")
-
-    if login_btn:
+    if st.button("Login"):
 
         if username == "admin" and password == "1234":
 
             st.session_state.logged_in = True
+            st.session_state.user = username
 
             st.success("Login Successful 🚀")
 
