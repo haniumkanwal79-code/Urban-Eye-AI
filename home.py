@@ -7,7 +7,6 @@ model = YOLO("best.pt")
 
 def show_home():
 
-    # ================= SIDEBAR =================
     st.sidebar.title("🚀 Navigation")
 
     menu = st.sidebar.radio(
@@ -20,64 +19,39 @@ def show_home():
         st.session_state.logged_in = False
         st.rerun()
 
-    # ================= HOME PAGE =================
+    # ================= HOME =================
     if menu == "Home":
-
-        st.markdown(
-            '<div class="main-title">🚀 Urban Issue Reporter</div>',
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            '<div class="subtitle">Smart AI-Based Complaint & Monitoring System</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown("## 🚀 Urban Issue Reporter Dashboard")
+        st.write("Welcome to AI based system")
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.markdown("""
-            <div class="card">
-                <h2>📍 Reports</h2>
-                <p>Total issue reports submitted by users.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            st.info("📍 Reports Module")
 
         with col2:
-            st.markdown("""
-            <div class="card">
-                <h2>🤖 AI Detection</h2>
-                <p>Automatic issue analysis using AI models.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            st.success("🤖 AI Detection")
 
         with col3:
-            st.markdown("""
-            <div class="card">
-                <h2>📊 Analytics</h2>
-                <p>Track complaints and department performance.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            st.warning("📊 Analytics")
 
-        st.write("")
+        st.metric("Total Complaints", "1240")
+        st.metric("Resolved", "980")
+        st.metric("Pending", "260")
 
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Total Complaints", "1,240")
-        m2.metric("Resolved", "980")
-        m3.metric("Pending", "260")
-
-    # ================= UPLOAD ISSUE =================
+    # ================= UPLOAD =================
     elif menu == "Upload Issue":
 
         st.title("📥 Upload Issue")
 
         input_type = st.radio(
             "Select Input Type:",
-            ("Image", "Video", "Live Camera")
+            ["Image", "Video", "Live Camera"]
         )
 
         # IMAGE
         if input_type == "Image":
+
             image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 
             if image is not None:
@@ -91,11 +65,11 @@ def show_home():
 
         # VIDEO
         elif input_type == "Video":
-            video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
+            video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
 
             if video is not None:
                 st.video(video)
-                st.warning("Video processing will be added soon 🚀")
+                st.warning("Video processing coming soon 🚀")
 
         # LIVE CAMERA
         elif input_type == "Live Camera":
@@ -112,7 +86,7 @@ def show_home():
                     return results[0].plot()
 
             webrtc_streamer(
-                key="yolo-live",
+                key="live",
                 video_transformer_factory=YOLOCamera,
                 media_stream_constraints={"video": True, "audio": False}
             )
@@ -120,9 +94,9 @@ def show_home():
     # ================= ANALYTICS =================
     elif menu == "Analytics":
         st.title("📊 Analytics Dashboard")
-        st.write("Graphs and statistics will be shown here")
+        st.write("Graphs coming soon")
 
     # ================= SETTINGS =================
     elif menu == "Settings":
         st.title("⚙️ Settings")
-        st.write("User preferences and system settings")
+        st.write("User preferences here")
