@@ -91,10 +91,36 @@ def show_home():
                 media_stream_constraints={"video": True, "audio": False}
             )
 
-    # ================= ANALYTICS =================
     elif menu == "Analytics":
-        st.title("📊 Analytics Dashboard")
-        st.write("Graphs coming soon")
+
+    st.title("📊 Analytics Dashboard")
+
+    st.subheader("Complaint Overview")
+
+    # Fake but structured dataset (later DB se aayega)
+    data = {
+        "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
+        "Count": [320, 210, 150, 400, 160]
+    }
+
+    import pandas as pd
+
+    df = pd.DataFrame(data)
+
+    st.bar_chart(df.set_index("Category"))
+
+    st.subheader("Status Distribution")
+
+    status = {
+        "Status": ["Resolved", "Pending", "In Progress"],
+        "Count": [980, 260, 120]
+    }
+
+    df2 = pd.DataFrame(status)
+
+    st.bar_chart(df2.set_index("Status"))
+
+    st.success("Live analytics system (demo data)")
 
     # ================= SETTINGS =================
     elif menu == "Settings":
