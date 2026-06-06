@@ -1,28 +1,25 @@
 import streamlit as st
-import home   # 👈 important: home.py import
+import home
 
-# Page Configuration
 st.set_page_config(
     page_title="Modern Login Page",
     page_icon="🔐",
     layout="centered"
 )
 
-# SESSION STATE INIT
+# SESSION STATE
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# ROUTING LOGIC (IMPORTANT)
+# ROUTING
 if st.session_state.logged_in:
     home.show_home()
     st.stop()
 
-# Custom CSS
+# ================= LOGIN UI =================
 st.markdown("""
 <style>
-body {
-    background-color: #0f172a;
-}
+body { background-color: #0f172a; }
 
 .stApp {
     background: linear-gradient(to right, #0f172a, #1e293b);
@@ -40,7 +37,6 @@ body {
     font-size: 40px;
     font-weight: bold;
     color: #2563eb;
-    margin-bottom: 10px;
 }
 
 .subtitle {
@@ -56,23 +52,14 @@ body {
     border-radius: 10px;
     height: 45px;
     font-size: 18px;
-    border: none;
 }
 
 .stButton > button:hover {
     background-color: #1d4ed8;
-    color: white;
-}
-
-.footer {
-    text-align: center;
-    margin-top: 20px;
-    color: gray;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Center Layout
 col1, col2, col3 = st.columns([1, 2, 1])
 
 with col2:
@@ -81,22 +68,15 @@ with col2:
     st.markdown('<div class="title">Welcome Back 👋</div>', unsafe_allow_html=True)
     st.markdown('<div class="subtitle">Login to continue</div>', unsafe_allow_html=True)
 
-    username = st.text_input("Username", placeholder="Enter your username")
-    password = st.text_input("Password", type="password", placeholder="Enter your password")
-
-    remember = st.checkbox("Remember Me")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
     if st.button("Login"):
         if username == "admin" and password == "1234":
             st.session_state.logged_in = True
-            st.success("✅ Login Successful")
-            st.rerun()   # 👈 redirect trigger
+            st.success("Login Successful")
+            st.rerun()
         else:
-            st.error("❌ Invalid Username or Password")
-
-    st.markdown(
-        '<div class="footer">Don\'t have an account? <a href="#">Sign Up</a></div>',
-        unsafe_allow_html=True
-    )
+            st.error("Invalid Credentials")
 
     st.markdown('</div>', unsafe_allow_html=True)
