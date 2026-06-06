@@ -1,105 +1,79 @@
+import streamlit as st
 import database as db
 
 db.create_table()
-import streamlit as st
 
-# SAFE IMPORT
-import home
-
-# ================= PAGE CONFIG =================
-st.set_page_config(
-    page_title="Urban Issue Reporter",
-    page_icon="🚀",
-    layout="centered"
-)
-
-# ================= SESSION STATE INIT =================
+# ================= SESSION =================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-if "user" not in st.session_state:
-    st.session_state.user = None
+if "page" not in st.session_state:
+    st.session_state.page = "login"
 
-# ================= LOGIN SUCCESS ROUTING =================
-if st.session_state.logged_in:
-    home.show_home()
-    st.stop()
+# ================= AUTH FUNCTIONS =================
+def signup_user(username, password):
+    conn = db.get_connection()
+    c = conn.cursor()
 
-# ================= LOGIN CSS =================
-st.markdown("""
-<style>
-body {
-    background-color: #0f172a;
-}
+    try:
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)",
+                  (username, password))
+        conn.commit()
+        return True
+    except:
+        return False
+    finally:
+        conn.close()
 
-.stApp {
-    background: linear-gradient(to right, #0f172a, #1e293b);
-}
 
-/* login card */
-.login-box {
-    background-color: white;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
-}
+def login_user(username, password):
+    conn = db.get_connection()
+    c = conn.cursor()
 
-/* title */
-.title {
-    text-align: center;
-    font-size: 36px;
-    font-weight: bold;
-    color: #2563eb;
-}
+    c.execute("SELECT * FROM users WHERE username=? AND password=?",
+              (username, password))
+    user = c.fetchone()
+    conn.close()
 
-/* subtitle */
-.subtitle {
-    text-align: center;
-    color: gray;
-    margin-bottom: 20px;
-}
+    return user
 
-/* button */
-.stButton > button {
-    width: 100%;
-    background-color: #2563eb;
-    color: white;
-    border-radius: 10px;
-    height: 45px;
-    font-size: 16px;
-    border: none;
-}
+# ================= LOGIN / SIGNUP UI =================
+st.title("🚀 Urban Issue Reporter")
 
-.stButton > button:hover {
-    background-color: #1d4ed8;
-}
-</style>
-""", unsafe_allow_html=True)
+menu = st.radio("Choose Action", ["Login", "Sign Up"])
 
-# ================= LOGIN UI =================
-col1, col2, col3 = st.columns([1, 2, 1])
+# ================= SIGN UP =================
+if menu == "Sign Up":
 
-with col2:
-    st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    new_user = st.text_input("Create Username")
+    new_pass = st.text_input("Create Password", type="password")
 
-    st.markdown('<div class="title">🚀 Welcome Back</div>', unsafe_allow_html=True)
-    st.markdown('<div class="subtitle">Login to Urban Issue Reporter</div>', unsafe_allow_html=True)
+    if st.button("Create Account"):
+
+        if signup_user(new_user, new_pass):
+            st.success("Account created successfully 🚀")
+        else:
+            st.error("Username already exists ❌")
+
+# ================= LOGIN =================
+elif menu == "Login":
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
 
-        if username == "admin" and password == "1234":
+        user = login_user(username, password)
 
+        if user:
             st.session_state.logged_in = True
             st.session_state.user = username
-
-            st.success("Login Successful 🚀")
-
+            st.success("Login successful 🚀")
             st.rerun()
-
         else:
-            st.error("Invalid Username or Password")
+            st.error("Invalid credentials ❌")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+# ================= ROUTE TO HOME =================
+if st.session_state.logged_in:
+    import home
+    home.show_home()
