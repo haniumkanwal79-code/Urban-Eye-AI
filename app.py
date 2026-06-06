@@ -7,19 +7,21 @@ st.set_page_config(
     layout="centered"
 )
 
-# SESSION STATE
+# SESSION STATE INIT
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# ROUTING
+# ================= ROUTING =================
 if st.session_state.logged_in:
     home.show_home()
     st.stop()
 
-# ================= LOGIN UI =================
+# ================= LOGIN CSS =================
 st.markdown("""
 <style>
-body { background-color: #0f172a; }
+body {
+    background-color: #0f172a;
+}
 
 .stApp {
     background: linear-gradient(to right, #0f172a, #1e293b);
@@ -37,6 +39,7 @@ body { background-color: #0f172a; }
     font-size: 40px;
     font-weight: bold;
     color: #2563eb;
+    margin-bottom: 10px;
 }
 
 .subtitle {
@@ -52,6 +55,7 @@ body { background-color: #0f172a; }
     border-radius: 10px;
     height: 45px;
     font-size: 18px;
+    border: none;
 }
 
 .stButton > button:hover {
@@ -60,6 +64,7 @@ body { background-color: #0f172a; }
 </style>
 """, unsafe_allow_html=True)
 
+# ================= LOGIN UI =================
 col1, col2, col3 = st.columns([1, 2, 1])
 
 with col2:
@@ -71,18 +76,19 @@ with col2:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
+    login_btn = st.button("Login")
 
-    if username == "admin" and password == "1234":
+    if login_btn:
 
-        st.session_state.logged_in = True
+        if username == "admin" and password == "1234":
 
-        # FORCE REFRESH SAFE WAY
-        st.success("Login Successful")
+            st.session_state.logged_in = True
 
-        st.switch_page  # fallback safe (if available)
+            st.success("Login Successful 🚀")
 
-        st.rerun()
+            st.rerun()
 
-    else:
-        st.error("Invalid Credentials")
+        else:
+            st.error("Invalid Username or Password")
+
+    st.markdown("</div>", unsafe_allow_html=True)
