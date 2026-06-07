@@ -3,6 +3,8 @@ import database as db
 
 # ================= DATABASE INIT =================
 db.create_table()
+import os
+st.write("DB exists:", os.path.exists("issues.db"))
 
 # ================= SESSION =================
 if "logged_in" not in st.session_state:
