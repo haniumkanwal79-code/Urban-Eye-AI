@@ -22,8 +22,18 @@ def show_home():
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = True
 
+    menu_options = [
+        "🏠 Home",
+        "📥 Upload Issue",
+        "📊 Analytics",
+        "⚙️ Settings"
+    ]
+
     if "menu" not in st.session_state:
-        st.session_state.menu = "Home"
+        st.session_state.menu = "🏠 Home"
+
+    if st.session_state.menu not in menu_options:
+        st.session_state.menu = "🏠 Home"
 
     # ================= SIDEBAR =================
     st.sidebar.title("🚀 Urban Issue Reporter")
@@ -31,10 +41,8 @@ def show_home():
 
     menu = st.sidebar.radio(
         "📌 Navigation",
-        ["🏠 Home", "📥 Upload Issue", "📊 Analytics", "⚙️ Settings"],
-        index=["🏠 Home", "📥 Upload Issue", "📊 Analytics", "⚙️ Settings"].index(
-            st.session_state.menu
-        )
+        menu_options,
+        index=menu_options.index(st.session_state.menu)
     )
 
     st.session_state.menu = menu
@@ -78,71 +86,110 @@ def show_home():
             ["Image", "Video", "Live Camera"]
         )
 
-       if input_type == "Image":
+        # ================= IMAGE =================
+        if input_type == "Image":
 
-    image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+            image = st.file_uploader(
+                "Upload Image",
+                type=["jpg", "jpeg", "png"]
+            )
 
-    if image is not None:
+            if image is not None:
 
-        # ================= IMAGE PROCESSING =================
-        file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, 1)
+                file_bytes = np.asarray(
+                    bytearray(image.read()),
+                    dtype=np.uint8
+                )
 
-        results = model(img)
-        annotated = results[0].plot()
+                img = cv2.imdecode(file_bytes, 1)
 
-        st.image(annotated, use_container_width=True)
+                results = model(img)
+                annotated = results[0].plot()
 
-        # ================= DATABASE INTEGRATION =================
-        import os
-        from datetime import datetime
-        import database as db
+                st.image(
+                    annotated,
+                    use_container_width=True
+                )
 
-        os.makedirs("uploads", exist_ok=True)
+                # ================= DATABASE SAVE =================
+                import os
+                from datetime import datetime
+                import database as db
 
-        file_name = f"uploads/{datetime.now().timestamp()}.jpg"
-        with open(file_name, "wb") as f:
-            f.write(image.getbuffer())
+                os.makedirs("uploads", exist_ok=True)
 
-        conn = db.get_connection()
-        c = conn.cursor()
+                image.seek(0)
 
-        c.execute("""
-            INSERT INTO issues (title, category, image_path, status)
-            VALUES (?, ?, ?, ?)
-        """, ("Road Issue", "Road", file_name, "Pending"))
+                file_name = (
+                    f"uploads/{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+                )
 
-        conn.commit()
-        conn.close()
+                with open(file_name, "wb") as f:
+                    f.write(image.getbuffer())
 
-        st.success("🚀 Issue saved to database successfully!")
+                conn = db.get_connection()
+                c = conn.cursor()
 
+                c.execute(
+                    """
+                    INSERT INTO issues
+                    (title, category, image_path, status)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (
+                        "Road Issue",
+                        "Road",
+                        file_name,
+                        "Pending"
+                    )
+                )
 
-elif input_type == "Video":
+                conn.commit()
+                conn.close()
 
-    video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
+                st.success(
+                    "🚀 Issue saved to database successfully!"
+                )
 
-    if video is not None:
-        st.video(video)
-        st.warning("Video processing pipeline coming soon 🚀")
+        # ================= VIDEO =================
+        elif input_type == "Video":
 
+            video = st.file_uploader(
+                "Upload Video",
+                type=["mp4", "avi", "mov"]
+            )
 
-elif input_type == "Live Camera":
+            if video is not None:
+                st.video(video)
+                st.warning(
+                    "Video processing pipeline coming soon 🚀"
+                )
 
-    class YOLOCamera(VideoTransformerBase):
-        def __init__(self):
-            self.model = model
+        # ================= LIVE CAMERA =================
+        elif input_type == "Live Camera":
 
-        def transform(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            results = self.model(img)
-            return results[0].plot()
+            class YOLOCamera(VideoTransformerBase):
 
-    webrtc_streamer(
-        key="live",
-        video_transformer_factory=YOLOCamera,
-        media_stream_constraints={"video": True, "audio": False}
-    )
+                def __init__(self):
+                    self.model = model
+
+                def transform(self, frame):
+                    img = frame.to_ndarray(
+                        format="bgr24"
+                    )
+
+                    results = self.model(img)
+
+                    return results[0].plot()
+
+            webrtc_streamer(
+                key="live",
+                video_transformer_factory=YOLOCamera,
+                media_stream_constraints={
+                    "video": True,
+                    "audio": False
+                }
+            )
 
     # ================= ANALYTICS =================
     elif menu == "📊 Analytics":
@@ -150,29 +197,69 @@ elif input_type == "Live Camera":
         st.title("📊 Analytics Dashboard")
 
         data = {
-            "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
-            "Count": [320, 210, 150, 400, 160]
+            "Category": [
+                "Road",
+                "Garbage",
+                "Street Light",
+                "Water",
+                "Other"
+            ],
+            "Count": [
+                320,
+                210,
+                150,
+                400,
+                160
+            ]
         }
 
         df = pd.DataFrame(data)
-        st.bar_chart(df.set_index("Category"))
+
+        st.bar_chart(
+            df.set_index("Category")
+        )
 
         status = {
-            "Status": ["Resolved", "Pending", "In Progress"],
-            "Count": [980, 260, 120]
+            "Status": [
+                "Resolved",
+                "Pending",
+                "In Progress"
+            ],
+            "Count": [
+                980,
+                260,
+                120
+            ]
         }
 
         df2 = pd.DataFrame(status)
-        st.bar_chart(df2.set_index("Status"))
 
-        st.success("Live analytics system (demo data)")
+        st.bar_chart(
+            df2.set_index("Status")
+        )
+
+        st.success(
+            "Live analytics system (demo data)"
+        )
 
     # ================= SETTINGS =================
     elif menu == "⚙️ Settings":
 
         st.title("⚙️ Settings")
-        st.write("User preferences and configuration panel")
 
-        st.checkbox("Enable Notifications")
-        st.checkbox("Dark Mode (UI only demo)")
-        st.selectbox("Report Priority Default", ["Low", "Medium", "High"])
+        st.write(
+            "User preferences and configuration panel"
+        )
+
+        st.checkbox(
+            "Enable Notifications"
+        )
+
+        st.checkbox(
+            "Dark Mode (UI only demo)"
+        )
+
+        st.selectbox(
+            "Report Priority Default",
+            ["Low", "Medium", "High"]
+        )
