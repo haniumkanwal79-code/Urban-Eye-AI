@@ -5,36 +5,37 @@ import cv2
 import pandas as pd
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
-# ================= EXTRA IMPORTS =================
+# ================= PDF SYSTEM ONLY =================
 from pdf_utils import create_pdf
-from email_utils import send_email
 import os
 
 # ================= CSS =================
 def load_css():
-    with open("style.css") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    try:
+        with open("style.css") as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    except:
+        pass
 
-# ================= REPORT SYSTEM =================
+
+# ================= REPORT SYSTEM (FIXED - NO EMAIL) =================
 def generate_report(issue_type, location, image_path):
 
-    # 1. CREATE PDF
-    pdf_path = create_pdf(issue_type, location, image_path)
+    try:
+        pdf_path = create_pdf(issue_type, location, image_path)
 
-    # 2. EMAIL CONTENT
-    subject = f"🚨 Urban Issue Detected: {issue_type}"
+        st.success("📄 PDF Report Generated Successfully!")
 
-    body = f"""
-    New Urban Issue Detected 🚨
+        with open(pdf_path, "rb") as f:
+            st.download_button(
+                label="⬇ Download Report PDF",
+                data=f,
+                file_name="urban_issue_report.pdf",
+                mime="application/pdf"
+            )
 
-    Issue Type: {issue_type}
-    Location: {location}
-
-    Please find attached PDF report.
-    """
-
-    # 3. SEND EMAIL
-    send_email(subject, body, pdf_path)
+    except Exception as e:
+        st.error(f"Report Error: {e}")
 
 
 # ================= MAIN =================
@@ -74,7 +75,6 @@ def show_home():
     if menu == "🏠 Home":
 
         st.title("🚀 Urban Issue Reporter Dashboard")
-
         st.write("AI-based Smart City Issue Detection System")
 
         st.metric("Total Complaints", "1240")
@@ -95,7 +95,6 @@ def show_home():
         if input_type == "Image":
 
             image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-
             location = st.text_input("Enter Location", "Unknown")
 
             if image is not None:
@@ -108,22 +107,24 @@ def show_home():
 
                 st.image(annotated, use_container_width=True)
 
-                # ================= AUTO REPORT =================
-                for r in results:
-                    for box in r.boxes:
+                st.success("Detection Completed 🚀")
 
-                        cls_id = int(box.cls[0])
-                        class_name = model.names[cls_id]
+                # ================= SAFE REPORT BUTTON =================
+                if st.button("📄 Generate Report"):
 
-                        if class_name.lower() == "person":
-                            continue
+                    for r in results:
+                        for box in r.boxes:
 
-                        image_path = f"temp_{class_name}.jpg"
-                        cv2.imwrite(image_path, img)
+                            cls_id = int(box.cls[0])
+                            class_name = model.names[cls_id]
 
-                        generate_report(class_name, location, image_path)
+                            if class_name.lower() == "person":
+                                continue
 
-                st.success("Detection + Report Sent 🚀")
+                            image_path = f"report_{class_name}.jpg"
+                            cv2.imwrite(image_path, img)
+
+                            generate_report(class_name, location, image_path)
 
         # ================= VIDEO =================
         elif input_type == "Video":
@@ -178,12 +179,6 @@ def show_home():
                             cv2.putText(frame_out, class_name, (x1,y1-10),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.7,
                                         (0,255,0), 2)
-
-                            # ================= AUTO REPORT =================
-                            image_path = f"live_{class_name}.jpg"
-                            cv2.imwrite(image_path, img)
-
-                            generate_report(class_name, location, image_path)
 
                     return frame_out
 
