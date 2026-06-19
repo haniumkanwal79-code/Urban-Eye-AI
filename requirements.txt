@@ -12,3 +12,4 @@ scikit-learn
 streamlit-webrtc
 av
 reportlab
+pyrebase4
