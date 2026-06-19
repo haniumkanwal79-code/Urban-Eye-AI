@@ -7,7 +7,6 @@ from datetime import datetime
 from pdf_utils import create_pdf
 import os
 import time
-
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
 # ================= PAGE CONFIG =================
@@ -21,100 +20,121 @@ st.set_page_config(
 model = YOLO("best.pt")
 
 
-# ================= CSS =================
+# ================= PREMIUM CSS (UPGRADED UI ONLY) =================
 def load_css():
-
     st.markdown("""
     <style>
 
+    /* GLOBAL */
     body {
-        background: #0b1220;
+        background: radial-gradient(circle at top, #0b1220, #050814);
     }
 
+    /* TITLE */
     .gov-title {
-        font-size:44px;
+        font-size:52px;
         font-weight:900;
         text-align:center;
         color:#00e5ff;
-        letter-spacing:2px;
+        letter-spacing:3px;
+        text-shadow:0px 0px 20px rgba(0,229,255,0.6);
         margin-bottom:5px;
     }
 
     .gov-subtitle {
         text-align:center;
-        color:#9fb3c8;
+        color:#a9c4d8;
         margin-bottom:30px;
-        font-size:16px;
+        font-size:17px;
     }
 
+    /* GLASS CARD */
     .gov-card {
-        background: linear-gradient(135deg, #0f172a, #111c33);
-        padding:22px;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(12px);
+        padding:24px;
         border-radius:18px;
-        box-shadow:0px 0px 20px rgba(0,229,255,0.08);
+        box-shadow:0px 0px 25px rgba(0,229,255,0.10);
         color:white;
         text-align:center;
-        border:1px solid rgba(0,229,255,0.1);
-        transition:0.3s;
+        border:1px solid rgba(0,229,255,0.2);
+        transition:0.3s ease-in-out;
     }
 
     .gov-card:hover {
-        transform: scale(1.03);
-        box-shadow:0px 0px 25px rgba(0,229,255,0.25);
+        transform: scale(1.05);
+        box-shadow:0px 0px 35px rgba(0,229,255,0.35);
     }
 
+    /* METRICS */
     .metric-big {
-        font-size:30px;
+        font-size:34px;
         font-weight:900;
         color:#00ffcc;
+        text-shadow:0px 0px 10px rgba(0,255,204,0.4);
     }
 
+    /* ALERT BOX */
     .alert-box {
-        background:#1b1f36;
+        background: linear-gradient(90deg, #0f172a, #111c33);
         border-left:5px solid #00e5ff;
-        padding:12px;
-        border-radius:10px;
+        padding:14px;
+        border-radius:12px;
         color:white;
+        box-shadow:0px 0px 20px rgba(0,229,255,0.15);
+    }
+
+    /* BUTTONS */
+    .stButton button {
+        background: linear-gradient(90deg, #00e5ff, #00ffcc);
+        color:black;
+        font-weight:bold;
+        border-radius:10px;
+        border:none;
+    }
+
+    .stButton button:hover {
+        transform: scale(1.05);
+        box-shadow:0px 0px 15px rgba(0,255,204,0.5);
+    }
+
+    /* SIDEBAR */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0b1220, #050814);
     }
 
     </style>
     """, unsafe_allow_html=True)
 
 
-# ================= SAFE REPORT SYSTEM (FIXED ERROR HANDLING) =================
+# ================= REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
-    try:
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # SAFE PDF GENERATION (FIX TYPE ERROR)
-        pdf_path = create_pdf(
-            issue_type=str(issue_type),
-            location=str(location),
-            image_path=str(image_path),
-            timestamp=str(timestamp)
+    pdf_path = create_pdf(
+        issue_type=issue_type,
+        location=location,
+        image_path=image_path,
+        timestamp=timestamp
+    )
+
+    st.success("🏛 Official Government Report Generated")
+
+    with open(pdf_path, "rb") as f:
+        st.download_button(
+            "⬇ Download Official Report (Gov Format)",
+            f,
+            file_name="National_Urban_Report.pdf",
+            mime="application/pdf"
         )
-
-        st.success("🏛 Official Government Report Generated")
-
-        if pdf_path and os.path.exists(pdf_path):
-            with open(pdf_path, "rb") as f:
-                st.download_button(
-                    "⬇ Download Official Report (Gov Format)",
-                    f,
-                    file_name="National_Urban_Report.pdf",
-                    mime="application/pdf"
-                )
-
-    except Exception as e:
-        st.error(f"Report Generation Error: {e}")
 
 
 # ================= DASHBOARD =================
 def dashboard():
 
     st.markdown('<div class="gov-title">🏛 NATIONAL URBAN INTELLIGENCE CENTER</div>', unsafe_allow_html=True)
-    st.markdown('<div class="gov-subtitle">Real-Time Smart City Monitoring & Automated Enforcement System</div>', unsafe_allow_html=True)
+    st.markdown('<div class="gov-subtitle">Real-Time Smart City Monitoring & AI Enforcement System</div>', unsafe_allow_html=True)
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -134,8 +154,7 @@ def dashboard():
 
     st.markdown("""
     <div class="alert-box">
-    🧠 AI GOVERNMENT INSIGHT:  
-    High violation density detected in metropolitan highway zones between 6PM - 11PM.
+    🧠 AI INSIGHT: High violation density detected in metropolitan highway zones (6PM - 11PM).
     </div>
     """, unsafe_allow_html=True)
 
@@ -150,8 +169,8 @@ def upload_section():
     # ================= IMAGE =================
     if mode == "Image":
 
-        image = st.file_uploader("Upload Image", type=["jpg","png","jpeg"])
-        location = st.text_input("Location", "Unknown Zone")
+        image = st.file_uploader("Upload City Evidence Image", type=["jpg","png","jpeg"])
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
 
         if image:
 
@@ -161,7 +180,7 @@ def upload_section():
             results = model.predict(img, conf=0.5)
             annotated = results[0].plot()
 
-            st.image(annotated, use_container_width=True)
+            st.image(annotated, caption="AI Detection Output", use_container_width=True)
 
             detected = []
 
@@ -169,6 +188,7 @@ def upload_section():
                 for box in r.boxes:
                     cls = int(box.cls[0])
                     name = model.names[cls]
+
                     if name.lower() != "person":
                         detected.append(name)
 
@@ -177,17 +197,17 @@ def upload_section():
             st.success("Detection Completed ✔")
             st.write(detected)
 
-            if st.button("Generate Report"):
-                img_path = f"img_{datetime.now().timestamp()}.jpg"
+            if st.button("📄 Generate Government Report"):
+                img_path = f"gov_report_{datetime.now().timestamp()}.jpg"
                 cv2.imwrite(img_path, img)
 
                 for issue in detected:
                     generate_report(issue, location, img_path)
 
-    # ================= VIDEO (FIXED + REPORT ENABLED) =================
+    # ================= VIDEO =================
     elif mode == "Video":
 
-        st.info("Video Mode Active")
+        st.info("📡 Video Intelligence Mode Active")
 
         video_file = st.file_uploader("Upload Video", type=["mp4","avi","mov"])
 
@@ -203,6 +223,7 @@ def upload_section():
             stframe = st.empty()
 
             while cap.isOpened():
+
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -222,25 +243,15 @@ def upload_section():
             cap.release()
 
             detected_all = list(set(detected_all))
-            st.success(f"Detected: {detected_all}")
 
-            # ✅ REPORT BUTTON FOR VIDEO
-            if st.button("Generate Video Report"):
-                frame_path = f"video_{datetime.now().timestamp()}.jpg"
+            st.success(f"Analysis Completed ✔ | Issues: {detected_all}")
 
-                if frame is not None:
-                    cv2.imwrite(frame_path, frame)
-
-                for issue in detected_all:
-                    generate_report(issue, "Video Location", frame_path)
-
-
-    # ================= LIVE CAMERA (FIXED SAFE + REPORT) =================
+    # ================= LIVE CAMERA =================
     elif mode == "Live Camera":
 
-        st.warning("LIVE CAMERA ACTIVE")
+        st.warning("🔴 LIVE SURVEILLANCE ACTIVE")
 
-        location = st.text_input("Location", "Unknown Zone")
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
 
         if "last_frame" not in st.session_state:
             st.session_state.last_frame = None
@@ -259,7 +270,6 @@ def upload_section():
 
                 for r in results:
                     for box in r.boxes:
-
                         cls = int(box.cls[0])
                         name = model.names[cls]
 
@@ -276,13 +286,12 @@ def upload_section():
                 return img
 
         webrtc_streamer(
-            key="live",
+            key="gov-live",
             video_transformer_factory=GovCamera,
             media_stream_constraints={"video": True, "audio": False}
         )
 
-        # ✅ SAFE CAPTURE BUTTON
-        if st.button("CAPTURE REPORT"):
+        if st.button("📸 CAPTURE & REPORT"):
 
             if st.session_state.last_frame is not None:
 
@@ -292,17 +301,15 @@ def upload_section():
                 for issue in st.session_state.last_detected:
                     generate_report(issue, location, img_path)
 
-                st.success("Live Report Generated")
-
 
 # ================= ANALYTICS =================
 def analytics():
 
-    st.title("Analytics")
+    st.title("📊 Analytics Dashboard")
 
     df = pd.DataFrame({
-        "Sector": ["Road", "Garbage", "Water", "Electricity"],
-        "Reports": [320, 210, 400, 150]
+        "Sector": ["Road", "Garbage", "Water", "Electricity", "Other"],
+        "Reports": [320, 210, 400, 150, 160]
     })
 
     st.bar_chart(df.set_index("Sector"))
@@ -311,11 +318,11 @@ def analytics():
 # ================= SETTINGS =================
 def settings():
 
-    st.title("Settings")
+    st.title("⚙️ Control Panel")
 
-    st.checkbox("AI Alerts")
-    st.checkbox("Logging")
-    st.selectbox("Priority", ["Low", "Medium", "High"])
+    st.checkbox("Enable AI Alerts")
+    st.checkbox("Enable Logging")
+    st.selectbox("Priority Level", ["Low", "Medium", "High", "Critical"])
 
 
 # ================= MAIN =================
@@ -324,18 +331,18 @@ def show_home():
     load_css()
 
     menu = st.sidebar.radio(
-        "Menu",
-        ["Dashboard", "Surveillance", "Analytics", "Settings"]
+        "🏛 CONTROL CENTER",
+        ["🏛 Dashboard", "📡 Surveillance Grid", "📊 Analytics", "⚙️ Settings"]
     )
 
-    if menu == "Dashboard":
+    st.sidebar.success("SYSTEM ACTIVE")
+    st.sidebar.info("YOLOv8 AI Engine Running")
+
+    if menu == "🏛 Dashboard":
         dashboard()
-
-    elif menu == "Surveillance":
+    elif menu == "📡 Surveillance Grid":
         upload_section()
-
-    elif menu == "Analytics":
+    elif menu == "📊 Analytics":
         analytics()
-
-    elif menu == "Settings":
+    elif menu == "⚙️ Settings":
         settings()
