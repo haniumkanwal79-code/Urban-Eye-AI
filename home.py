@@ -16,6 +16,13 @@ st.set_page_config(
 
 model = YOLO("best.pt")
 
+# ================= SESSION INIT =================
+if "captured_frame" not in st.session_state:
+    st.session_state.captured_frame = None
+
+if "captured_issue" not in st.session_state:
+    st.session_state.captured_issue = None
+
 # ================= MODERN UI CSS =================
 def load_css():
     st.markdown("""
@@ -29,39 +36,18 @@ def load_css():
         margin-bottom:20px;
     }
 
-    .sub-text {
-        text-align:center;
-        color:#AAB4C3;
-        margin-bottom:30px;
-    }
-
     .card {
         background: linear-gradient(135deg, #0f172a, #1e293b);
         padding:20px;
         border-radius:16px;
-        box-shadow:0px 0px 12px rgba(0,0,0,0.3);
         color:white;
         text-align:center;
-        transition:0.3s;
-    }
-
-    .card:hover {
-        transform: scale(1.02);
-        box-shadow:0px 0px 20px rgba(0,212,255,0.4);
     }
 
     .metric {
-        font-size:28px;
+        font-size:26px;
         font-weight:bold;
         color:#00ffcc;
-    }
-
-    .sidebar-box {
-        background:#111827;
-        padding:15px;
-        border-radius:10px;
-        margin-bottom:10px;
-        color:white;
     }
 
     </style>
@@ -80,145 +66,164 @@ def generate_report(issue_type, location, image_path):
         timestamp=timestamp
     )
 
-    st.success("📄 Government-Level Report Generated")
+    st.success("📄 Report Generated Successfully")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Official Report",
+            "⬇ Download Report",
             f,
-            file_name="Urban_AI_Gov_Report.pdf",
+            file_name="Urban_AI_Report.pdf",
             mime="application/pdf"
         )
+
+
+# ================= DETECT FUNCTION =================
+def detect_issues(frame):
+    results = model.predict(frame, conf=0.5)
+
+    detected = []
+    annotated = results[0].plot()
+
+    for r in results:
+        for box in r.boxes:
+            cls = int(box.cls[0])
+            name = model.names[cls]
+
+            if name.lower() != "person":
+                detected.append(name)
+
+    return annotated, list(set(detected))
 
 
 # ================= DASHBOARD =================
 def dashboard():
 
     st.markdown('<div class="main-title">🚀 URBAN AI COMMAND CENTER</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-text">Smart City Monitoring & Automated Issue Detection System</div>', unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
-    with col1:
-        st.markdown('<div class="card">🔥 TOTAL ISSUES<br><div class="metric">1240</div></div>', unsafe_allow_html=True)
-
-    with col2:
-        st.markdown('<div class="card">✅ RESOLVED<br><div class="metric">980</div></div>', unsafe_allow_html=True)
-
-    with col3:
-        st.markdown('<div class="card">⚠ PENDING<br><div class="metric">260</div></div>', unsafe_allow_html=True)
-
-    with col4:
-        st.markdown('<div class="card">📍 ACTIVE ZONES<br><div class="metric">18</div></div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    # AI INSIGHT PANEL
-    st.info("🧠 AI Insight: Most issues detected in HIGH TRAFFIC urban zones between 6PM - 10PM")
+    col1.metric("Total Issues", "1240")
+    col2.metric("Resolved", "980")
+    col3.metric("Pending", "260")
 
 
-# ================= UPLOAD SECTION =================
-def upload_section():
+# ================= IMAGE MODE =================
+def image_mode():
 
-    st.title("📡 AI Vision Monitoring System")
+    st.title("📡 Image Detection")
 
-    input_type = st.radio("Select Input Mode", ["Image", "Video", "Live Camera"])
+    image = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+    location = st.text_input("Location", "Unknown")
 
-    if input_type == "Image":
+    if image:
 
-        image = st.file_uploader("Upload City Image", type=["jpg","png","jpeg"])
-        location = st.text_input("📍 Location (Auto GPS ready)", "Unknown Area")
+        file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+        img = cv2.imdecode(file_bytes, 1)
 
-        if image:
+        annotated, detected = detect_issues(img)
 
-            file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
-            img = cv2.imdecode(file_bytes, 1)
+        st.image(annotated, use_container_width=True)
 
-            results = model.predict(img, conf=0.5)
-            annotated = results[0].plot()
+        st.write("### Detected Issues:", detected)
 
-            st.image(annotated, caption="AI Detection Output", use_container_width=True)
+        if st.button("Generate Report"):
+            path = f"img_{datetime.now().timestamp()}.jpg"
+            cv2.imwrite(path, img)
 
-            detected = []
+            for issue in detected:
+                generate_report(issue, location, path)
 
-            for r in results:
-                for box in r.boxes:
-                    cls = int(box.cls[0])
-                    name = model.names[cls]
-                    if name.lower() != "person":
-                        detected.append(name)
 
-            detected = list(set(detected))
+# ================= LIVE CAMERA (FIXED + OK BUTTON) =================
+def live_camera():
 
-            st.success("Detection Completed ✔")
+    st.title("🎥 Live Smart Detection")
 
-            st.write("### 🚨 Detected Issues")
-            for d in detected:
-                st.write("🔴", d)
+    location = st.text_input("Location", "Auto GPS (manual fallback)")
 
-            if st.button("📄 Generate Government Report"):
+    frame_placeholder = st.empty()
 
-                img_path = f"report_{datetime.now().timestamp()}.jpg"
-                cv2.imwrite(img_path, img)
+    cap = cv2.VideoCapture(0)
 
-                for issue in detected:
-                    generate_report(issue, location, img_path)
+    run = st.checkbox("Start Camera")
 
-    elif input_type == "Video":
-        st.info("Video intelligence module upgrading... 🚧")
+    while run:
 
-    elif input_type == "Live Camera":
-        st.warning("Live surveillance mode (Beta)")
+        ret, frame = cap.read()
+        if not ret:
+            st.error("Camera not found")
+            break
+
+        annotated, detected = detect_issues(frame)
+
+        frame_placeholder.image(annotated, channels="BGR")
+
+        if len(detected) > 0:
+
+            st.warning(f"Issues Detected: {detected}")
+
+            # SAVE FRAME FOR CONFIRMATION
+            st.session_state.captured_frame = frame.copy()
+            st.session_state.captured_issue = detected
+
+            if st.button("✔ Capture This Frame (OK)"):
+                path = f"live_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(path, st.session_state.captured_frame)
+
+                for issue in st.session_state.captured_issue:
+                    generate_report(issue, location, path)
+
+                st.success("Report Generated from Selected Frame")
+
+    cap.release()
 
 
 # ================= ANALYTICS =================
 def analytics():
 
-    st.title("📊 National Urban Analytics")
+    st.title("📊 Analytics")
 
     df = pd.DataFrame({
-        "Sector": ["Road", "Garbage", "Water", "Electricity", "Other"],
+        "Category": ["Road", "Garbage", "Water", "Electricity", "Other"],
         "Reports": [320, 210, 400, 150, 160]
     })
 
-    st.bar_chart(df.set_index("Sector"))
-
-    st.success("📊 Trend: Road & Water issues are increasing in metropolitan zones")
+    st.bar_chart(df.set_index("Category"))
 
 
 # ================= SETTINGS =================
 def settings():
 
-    st.title("⚙️ System Control Panel")
+    st.title("⚙️ Settings")
 
-    st.checkbox("Enable AI Auto Reporting")
-    st.checkbox("Enable Smart Alerts")
-    st.checkbox("Dark Mode (UI)")
-    st.selectbox("Priority Mode", ["Low", "Medium", "High", "Critical"])
+    st.checkbox("AI Auto Reporting")
+    st.checkbox("Smart Alerts")
+    st.selectbox("Priority", ["Low", "Medium", "High", "Critical"])
 
 
-# ================= MAIN APP =================
+# ================= MAIN =================
 def show_home():
 
     load_css()
 
     menu = st.sidebar.radio(
         "🚀 Urban AI Navigation",
-        ["🏠 Command Dashboard", "📡 Detection System", "📊 Analytics", "⚙️ Settings"]
+        ["Dashboard", "Image Mode", "Live Camera", "Analytics", "Settings"]
     )
 
-    st.sidebar.markdown("---")
-    st.sidebar.success("🟢 System Online")
-    st.sidebar.info("AI Model: YOLOv8 Active")
+    st.sidebar.success("System Online")
 
-    if menu == "🏠 Command Dashboard":
+    if menu == "Dashboard":
         dashboard()
 
-    elif menu == "📡 Detection System":
-        upload_section()
+    elif menu == "Image Mode":
+        image_mode()
 
-    elif menu == "📊 Analytics":
+    elif menu == "Live Camera":
+        live_camera()
+
+    elif menu == "Analytics":
         analytics()
 
-    elif menu == "⚙️ Settings":
+    elif menu == "Settings":
         settings()
