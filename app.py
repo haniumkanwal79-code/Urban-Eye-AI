@@ -2,9 +2,8 @@ import streamlit as st
 import database as db
 import os
 
-# ================= REPORT SYSTEM =================
+# ================= REPORT SYSTEM (ONLY PDF) =================
 from pdf_utils import create_pdf
-from email_utils import send_email
 
 # ================= FIREBASE AUTH =================
 import pyrebase
@@ -28,8 +27,6 @@ db.create_table()
 os.makedirs("reports", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
 
-st.write("DB exists:", os.path.exists("issues.db"))
-
 # ================= SESSION =================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -38,32 +35,28 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 
-# ================= 🚨 REPORT SYSTEM =================
+# ================= 🚨 REPORT SYSTEM (PDF ONLY) =================
 def generate_report(issue_type, location, image_path):
 
     try:
         pdf_path = create_pdf(issue_type, location, image_path)
 
-        subject = f"🚨 Urban Issue Detected: {issue_type}"
+        st.success("📄 PDF Report Generated Successfully!")
 
-        body = f"""
-🚨 New Urban Issue Detected
-
-Issue Type: {issue_type}
-Location: {location}
-
-Please check attached PDF report.
-        """
-
-        send_email(subject, body, pdf_path)
-
-        st.success("📧 Report generated & email sent successfully!")
+        # show download button
+        with open(pdf_path, "rb") as f:
+            st.download_button(
+                label="⬇ Download Report PDF",
+                data=f,
+                file_name="urban_issue_report.pdf",
+                mime="application/pdf"
+            )
 
     except Exception as e:
         st.error(f"Report Error: {e}")
 
 
-# ================= 🔐 FIREBASE SIGNUP =================
+# ================= 🔐 SIGNUP =================
 def firebase_signup():
 
     st.subheader("🆕 Create New Account")
@@ -81,7 +74,7 @@ def firebase_signup():
             st.error(f"Signup Failed ❌ {e}")
 
 
-# ================= 🔐 FIREBASE LOGIN =================
+# ================= 🔐 LOGIN =================
 def firebase_login():
 
     st.subheader("🔐 Login")
