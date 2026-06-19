@@ -3,8 +3,8 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import pandas as pd
-from datetime import datetime
 from pdf_utils import create_pdf
+from datetime import datetime
 import os
 
 # ================= PAGE CONFIG =================
@@ -18,7 +18,7 @@ st.set_page_config(
 model = YOLO("best.pt")
 
 
-# ================= CSS (MODERN UI) =================
+# ================= CSS =================
 def load_css():
     st.markdown("""
     <style>
@@ -26,48 +26,37 @@ def load_css():
         font-size:40px;
         font-weight:700;
         color:#00C2FF;
-    }
-    .card {
-        padding:20px;
-        border-radius:15px;
-        background:#111827;
-        color:white;
-        margin-bottom:10px;
+        text-align:center;
     }
     .metric-box {
         background:#1f2937;
         padding:15px;
         border-radius:10px;
         text-align:center;
+        color:white;
     }
     </style>
     """, unsafe_allow_html=True)
 
 
-# ================= REPORT GENERATOR =================
+# ================= REPORT SYSTEM (FIXED) =================
 def generate_report(issue_type, location, image_path):
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # ❗ FIX: NO timestamp parameter (avoids error)
+    pdf_path = create_pdf(issue_type, location, image_path)
 
-    pdf_path = create_pdf(
-        issue_type=issue_type,
-        location=location,
-        image_path=image_path,
-        timestamp=timestamp
-    )
-
-    st.success("📄 Professional Report Generated!")
+    st.success("📄 Report Generated Successfully!")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            label="⬇ Download Smart Report",
-            data=f,
+            "⬇ Download Smart Report",
+            f,
             file_name="Urban_AI_Report.pdf",
             mime="application/pdf"
         )
 
 
-# ================= HOME DASHBOARD =================
+# ================= DASHBOARD =================
 def dashboard():
 
     st.markdown('<div class="main-title">🚀 Urban AI Smart City Dashboard</div>', unsafe_allow_html=True)
@@ -182,7 +171,7 @@ def show_home():
         ["🏠 Dashboard", "📥 Detect Issues", "📊 Analytics", "⚙️ Settings"]
     )
 
-    st.sidebar.success("Smart City AI System")
+    st.sidebar.success("Smart City AI System 🚀")
 
     if menu == "🏠 Dashboard":
         dashboard()
