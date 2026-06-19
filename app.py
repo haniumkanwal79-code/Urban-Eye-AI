@@ -7,15 +7,22 @@ from pdf_utils import create_pdf
 from email_utils import send_email
 
 # ================= FIREBASE AUTH =================
-import pyrebase
+import pyrebase4 as pyrebase
 
+# 🔥 Firebase config (CONVERTED FROM JS)
 firebaseConfig = {
-    "apiKey": "YOUR_API_KEY",
-    "authDomain": "YOUR_AUTH_DOMAIN",
-    "projectId": "YOUR_PROJECT_ID",
-    "storageBucket": "YOUR_STORAGE_BUCKET",
-    "messagingSenderId": "YOUR_MESSAGING_ID",
-    "appId": "YOUR_APP_ID"
+    "apiKey": "AIzaSyBg4jTdlcrqKwNa0115fJN6rQsUtorZp58",
+    "authDomain": "urban-ai-145b8.firebaseapp.com",
+    "projectId": "urban-ai-145b8",
+
+    # ⚠️ FIXED STORAGE BUCKET
+    "storageBucket": "urban-ai-145b8.appspot.com",
+
+    "messagingSenderId": "747825183051",
+    "appId": "1:747825183051:web:6cb5fc015813525808d0ce",
+
+    # required by pyrebase
+    "databaseURL": ""
 }
 
 firebase = pyrebase.initialize_app(firebaseConfig)
@@ -40,20 +47,26 @@ if "user" not in st.session_state:
 # ================= 🚨 REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
-    pdf_path = create_pdf(issue_type, location, image_path)
+    try:
+        pdf_path = create_pdf(issue_type, location, image_path)
 
-    subject = f"🚨 Urban Issue Detected: {issue_type}"
+        subject = f"🚨 Urban Issue Detected: {issue_type}"
 
-    body = f"""
-    New Urban Issue Detected 🚨
+        body = f"""
+        🚨 New Urban Issue Detected
 
-    Issue Type: {issue_type}
-    Location: {location}
+        Issue Type: {issue_type}
+        Location: {location}
 
-    Please check attached PDF report.
-    """
+        Please check attached PDF report.
+        """
 
-    send_email(subject, body, pdf_path)
+        send_email(subject, body, pdf_path)
+
+        st.success("📧 Report generated & email sent successfully!")
+
+    except Exception as e:
+        st.error(f"Report Error: {e}")
 
 
 # ================= 🔐 FIREBASE LOGIN =================
@@ -64,7 +77,7 @@ def firebase_login():
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login with Google/Firebase"):
+    if st.button("Login with Firebase"):
 
         try:
             user = auth.sign_in_with_email_and_password(email, password)
@@ -76,7 +89,7 @@ def firebase_login():
             st.rerun()
 
         except Exception as e:
-            st.error("Login Failed ❌ Check credentials")
+            st.error(f"Login Failed ❌ {e}")
 
 
 # ================= ROUTING =================
