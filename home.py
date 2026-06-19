@@ -303,17 +303,121 @@ def upload_section():
 
 
 # ================= ANALYTICS =================
+# ================= ANALYTICS (MAX PREMIUM UPGRADE) =================
 def analytics():
 
-    st.title("📊 Analytics Dashboard")
+    st.markdown("""
+    <style>
+    .intel-header{
+        font-size:32px;
+        font-weight:900;
+        color:#00e5ff;
+        text-align:center;
+        margin-bottom:10px;
+    }
 
+    .intel-sub{
+        text-align:center;
+        color:#9fb3c8;
+        margin-bottom:25px;
+    }
+
+    .kpi-box{
+        background: linear-gradient(135deg,#0f172a,#111c33);
+        padding:20px;
+        border-radius:16px;
+        text-align:center;
+        border:1px solid rgba(0,229,255,0.2);
+        box-shadow:0px 0px 20px rgba(0,229,255,0.08);
+    }
+
+    .kpi-value{
+        font-size:28px;
+        font-weight:900;
+        color:#00ffcc;
+    }
+
+    .kpi-label{
+        color:#9fb3c8;
+        font-size:14px;
+    }
+
+    .intel-box{
+        background:#1b1f36;
+        padding:15px;
+        border-left:5px solid #00e5ff;
+        border-radius:10px;
+        color:white;
+        margin-top:15px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="intel-header">📊 NATIONAL INTELLIGENCE ANALYTICS CENTER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="intel-sub">Real-Time Urban Monitoring | Predictive Violation System | AI Insights Engine</div>', unsafe_allow_html=True)
+
+    # ================= KPI CARDS =================
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.markdown('<div class="kpi-box"><div class="kpi-value">1240</div><div class="kpi-label">Total Reports</div></div>', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<div class="kpi-box"><div class="kpi-value">78%</div><div class="kpi-label">Detection Accuracy</div></div>', unsafe_allow_html=True)
+
+    with col3:
+        st.markdown('<div class="kpi-box"><div class="kpi-value">260</div><div class="kpi-label">Active Alerts</div></div>', unsafe_allow_html=True)
+
+    with col4:
+        st.markdown('<div class="kpi-box"><div class="kpi-value">18</div><div class="kpi-label">Monitored Zones</div></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ================= DATA =================
     df = pd.DataFrame({
         "Sector": ["Road", "Garbage", "Water", "Electricity", "Other"],
         "Reports": [320, 210, 400, 150, 160]
     })
 
-    st.bar_chart(df.set_index("Sector"))
+    colA, colB = st.columns(2)
 
+    with colA:
+        st.subheader("📈 Sector Wise Reports Trend")
+        st.line_chart(df.set_index("Sector"))
+        st.bar_chart(df.set_index("Sector"))
+
+    with colB:
+        st.subheader("🔥 Risk Heatmap Simulation")
+
+        heat_df = pd.DataFrame({
+            "Zone A": [8, 3, 5],
+            "Zone B": [6, 9, 2],
+            "Zone C": [4, 7, 6]
+        }, index=["Road", "Garbage", "Water"])
+
+        st.dataframe(heat_df, use_container_width=True)
+
+    # ================= AI INSIGHT ENGINE =================
+    st.markdown("""
+    <div class="intel-box">
+    🧠 AI INSIGHT ENGINE:<br><br>
+    • High violation density detected in ROAD sector (Urban highways)<br>
+    • Garbage complaints increasing in Zone B (Possible waste management failure)<br>
+    • Water-related issues stable but rising in outskirts<br>
+    • Predictive Alert: Next 7 days → 12% increase in road violations expected
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ================= DOWNLOAD BUTTON =================
+    report_df = df.copy()
+    csv = report_df.to_csv(index=False).encode('utf-8')
+
+    st.download_button(
+        "⬇ Download Intelligence Report (CSV)",
+        data=csv,
+        file_name="national_intelligence_report.csv",
+        mime="text/csv"
+    )
 
 # ================= SETTINGS =================
 def settings():
