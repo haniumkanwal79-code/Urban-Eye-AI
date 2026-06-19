@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime
 from pdf_utils import create_pdf
 import os
+import time
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
@@ -15,13 +16,6 @@ st.set_page_config(
 )
 
 model = YOLO("best.pt")
-
-# ================= SESSION INIT =================
-if "captured_frame" not in st.session_state:
-    st.session_state.captured_frame = None
-
-if "captured_issue" not in st.session_state:
-    st.session_state.captured_issue = None
 
 # ================= MODERN UI CSS =================
 def load_css():
@@ -36,16 +30,29 @@ def load_css():
         margin-bottom:20px;
     }
 
+    .sub-text {
+        text-align:center;
+        color:#AAB4C3;
+        margin-bottom:30px;
+    }
+
     .card {
         background: linear-gradient(135deg, #0f172a, #1e293b);
         padding:20px;
         border-radius:16px;
+        box-shadow:0px 0px 12px rgba(0,0,0,0.3);
         color:white;
         text-align:center;
+        transition:0.3s;
+    }
+
+    .card:hover {
+        transform: scale(1.02);
+        box-shadow:0px 0px 20px rgba(0,212,255,0.4);
     }
 
     .metric {
-        font-size:26px;
+        font-size:28px;
         font-weight:bold;
         color:#00ffcc;
     }
@@ -66,126 +73,163 @@ def generate_report(issue_type, location, image_path):
         timestamp=timestamp
     )
 
-    st.success("📄 Report Generated Successfully")
+    st.success("📄 Government-Level Report Generated")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Report",
+            "⬇ Download Official Report",
             f,
-            file_name="Urban_AI_Report.pdf",
+            file_name="Urban_AI_Gov_Report.pdf",
             mime="application/pdf"
         )
-
-
-# ================= DETECT FUNCTION =================
-def detect_issues(frame):
-    results = model.predict(frame, conf=0.5)
-
-    detected = []
-    annotated = results[0].plot()
-
-    for r in results:
-        for box in r.boxes:
-            cls = int(box.cls[0])
-            name = model.names[cls]
-
-            if name.lower() != "person":
-                detected.append(name)
-
-    return annotated, list(set(detected))
 
 
 # ================= DASHBOARD =================
 def dashboard():
 
     st.markdown('<div class="main-title">🚀 URBAN AI COMMAND CENTER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-text">Smart City Monitoring & Automated Issue Detection System</div>', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Total Issues", "1240")
-    col2.metric("Resolved", "980")
-    col3.metric("Pending", "260")
+    with col1:
+        st.markdown('<div class="card">🔥 TOTAL ISSUES<br><div class="metric">1240</div></div>', unsafe_allow_html=True)
 
+    with col2:
+        st.markdown('<div class="card">✅ RESOLVED<br><div class="metric">980</div></div>', unsafe_allow_html=True)
 
-# ================= IMAGE MODE =================
-def image_mode():
+    with col3:
+        st.markdown('<div class="card">⚠ PENDING<br><div class="metric">260</div></div>', unsafe_allow_html=True)
 
-    st.title("📡 Image Detection")
+    with col4:
+        st.markdown('<div class="card">📍 ACTIVE ZONES<br><div class="metric">18</div></div>', unsafe_allow_html=True)
 
-    image = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-    location = st.text_input("Location", "Unknown")
-
-    if image:
-
-        file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, 1)
-
-        annotated, detected = detect_issues(img)
-
-        st.image(annotated, use_container_width=True)
-
-        st.write("### Detected Issues:", detected)
-
-        if st.button("Generate Report"):
-            path = f"img_{datetime.now().timestamp()}.jpg"
-            cv2.imwrite(path, img)
-
-            for issue in detected:
-                generate_report(issue, location, path)
+    st.markdown("---")
+    st.info("🧠 AI Insight: Peak issues detected in urban high traffic zones (6PM–10PM)")
 
 
-# ================= LIVE CAMERA (FIXED + OK BUTTON) =================
-def live_camera():
+# ================= UPLOAD SECTION =================
+def upload_section():
 
-    st.title("🎥 Live Smart Detection")
+    st.title("📡 AI Vision Monitoring System")
 
-    location = st.text_input("Location", "Auto GPS (manual fallback)")
+    input_type = st.radio("Select Input Mode", ["Image", "Video", "Live Camera"])
 
-    frame_placeholder = st.empty()
+    # ================= IMAGE =================
+    if input_type == "Image":
 
-    cap = cv2.VideoCapture(0)
+        image = st.file_uploader("Upload City Image", type=["jpg","png","jpeg"])
+        location = st.text_input("📍 Location", "Unknown Area")
 
-    run = st.checkbox("Start Camera")
+        if image:
 
-    while run:
+            file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+            img = cv2.imdecode(file_bytes, 1)
 
-        ret, frame = cap.read()
-        if not ret:
-            st.error("Camera not found")
-            break
+            results = model.predict(img, conf=0.5)
+            annotated = results[0].plot()
 
-        annotated, detected = detect_issues(frame)
+            st.image(annotated, caption="AI Detection Output", use_container_width=True)
 
-        frame_placeholder.image(annotated, channels="BGR")
+            detected = []
 
-        if len(detected) > 0:
+            for r in results:
+                for box in r.boxes:
+                    cls = int(box.cls[0])
+                    name = model.names[cls]
+                    if name.lower() != "person":
+                        detected.append(name)
 
-            st.warning(f"Issues Detected: {detected}")
+            detected = list(set(detected))
 
-            # SAVE FRAME FOR CONFIRMATION
-            st.session_state.captured_frame = frame.copy()
-            st.session_state.captured_issue = detected
+            st.success("Detection Completed ✔")
 
-            if st.button("✔ Capture This Frame (OK)"):
-                path = f"live_{datetime.now().timestamp()}.jpg"
-                cv2.imwrite(path, st.session_state.captured_frame)
+            st.write("### 🚨 Detected Issues")
+            for d in detected:
+                st.write("🔴", d)
 
-                for issue in st.session_state.captured_issue:
-                    generate_report(issue, location, path)
+            if st.button("📄 Generate Government Report"):
 
-                st.success("Report Generated from Selected Frame")
+                img_path = f"report_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(img_path, img)
 
-    cap.release()
+                for issue in detected:
+                    generate_report(issue, location, img_path)
+
+
+    # ================= VIDEO =================
+    elif input_type == "Video":
+        st.info("Video module upgrading 🚧")
+
+
+    # ================= LIVE CAMERA (FIXED + CAPTURE BUTTON) =================
+    elif input_type == "Live Camera":
+
+        st.warning("🎥 Live Surveillance Mode Active")
+
+        location = st.text_input("📍 Location", "Unknown Area")
+
+        start = st.checkbox("▶ Start Camera")
+
+        frame_placeholder = st.image([])
+
+        cap = cv2.VideoCapture(0)
+
+        if start:
+
+            while True:
+
+                ret, frame = cap.read()
+                if not ret:
+                    st.error("Camera not working")
+                    break
+
+                results = model.predict(frame, conf=0.5)
+                annotated = results[0].plot()
+
+                frame_placeholder.image(annotated, channels="BGR")
+
+                detected = []
+
+                for r in results:
+                    for box in r.boxes:
+                        cls = int(box.cls[0])
+                        name = model.names[cls]
+
+                        if name.lower() != "person":
+                            detected.append(name)
+
+                detected = list(set(detected))
+
+                if len(detected) > 0:
+
+                    st.warning(f"🚨 Detected: {detected}")
+
+                    st.session_state.frame = frame.copy()
+                    st.session_state.detected = detected
+
+                    if st.button("✔ Capture & Generate Report"):
+
+                        img_path = f"live_{datetime.now().timestamp()}.jpg"
+                        cv2.imwrite(img_path, st.session_state.frame)
+
+                        for issue in st.session_state.detected:
+                            generate_report(issue, location, img_path)
+
+                        st.success("Report Generated from Live Camera")
+                        break
+
+        cap.release()
 
 
 # ================= ANALYTICS =================
 def analytics():
 
-    st.title("📊 Analytics")
+    st.title("📊 Analytics Dashboard")
 
     df = pd.DataFrame({
-        "Category": ["Road", "Garbage", "Water", "Electricity", "Other"],
-        "Reports": [320, 210, 400, 150, 160]
+        "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
+        "Reports": [320, 210, 150, 400, 160]
     })
 
     st.bar_chart(df.set_index("Category"))
@@ -194,36 +238,33 @@ def analytics():
 # ================= SETTINGS =================
 def settings():
 
-    st.title("⚙️ Settings")
+    st.title("⚙️ System Settings")
 
-    st.checkbox("AI Auto Reporting")
-    st.checkbox("Smart Alerts")
-    st.selectbox("Priority", ["Low", "Medium", "High", "Critical"])
+    st.checkbox("Enable Notifications")
+    st.checkbox("Dark Mode")
+    st.selectbox("Priority Level", ["Low", "Medium", "High", "Critical"])
 
 
-# ================= MAIN =================
+# ================= MAIN APP =================
 def show_home():
 
     load_css()
 
     menu = st.sidebar.radio(
         "🚀 Urban AI Navigation",
-        ["Dashboard", "Image Mode", "Live Camera", "Analytics", "Settings"]
+        ["🏠 Dashboard", "📡 Detection System", "📊 Analytics", "⚙️ Settings"]
     )
 
-    st.sidebar.success("System Online")
+    st.sidebar.success("🟢 System Online")
 
-    if menu == "Dashboard":
+    if menu == "🏠 Dashboard":
         dashboard()
 
-    elif menu == "Image Mode":
-        image_mode()
+    elif menu == "📡 Detection System":
+        upload_section()
 
-    elif menu == "Live Camera":
-        live_camera()
-
-    elif menu == "Analytics":
+    elif menu == "📊 Analytics":
         analytics()
 
-    elif menu == "Settings":
+    elif menu == "⚙️ Settings":
         settings()
