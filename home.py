@@ -9,6 +9,10 @@ from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 from pdf_utils import create_pdf
 import os
 
+# ================= GPS LOCATION =================
+from streamlit_js_eval import get_geolocation
+
+
 # ================= CSS =================
 def load_css():
     try:
@@ -18,7 +22,7 @@ def load_css():
         pass
 
 
-# ================= REPORT SYSTEM (FIXED - NO EMAIL) =================
+# ================= REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
     try:
@@ -95,7 +99,18 @@ def show_home():
         if input_type == "Image":
 
             image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-            location = st.text_input("Enter Location", "Unknown")
+
+            # ================= AUTO GPS LOCATION =================
+            location_data = get_geolocation()
+
+            if location_data:
+                lat = location_data["coords"]["latitude"]
+                lon = location_data["coords"]["longitude"]
+                location = f"{lat}, {lon}"
+                st.success(f"📍 Location Captured")
+            else:
+                location = "Unknown"
+                st.warning("⚠️ Location not available")
 
             if image is not None:
 
@@ -109,7 +124,7 @@ def show_home():
 
                 st.success("Detection Completed 🚀")
 
-                # ================= SAFE REPORT BUTTON =================
+                # ================= REPORT BUTTON =================
                 if st.button("📄 Generate Report"):
 
                     for r in results:
@@ -148,7 +163,7 @@ def show_home():
                 0.05
             )
 
-            location = st.text_input("Enter Location", "Unknown")
+            location = "Live Camera Mode"
 
             class YOLOCamera(VideoTransformerBase):
 
