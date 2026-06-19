@@ -3,55 +3,90 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import pandas as pd
-from pdf_utils import create_pdf
 from datetime import datetime
+from pdf_utils import create_pdf
 import os
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
-    page_title="Urban AI Smart Dashboard",
+    page_title="Urban AI Command Center",
     page_icon="🚀",
     layout="wide"
 )
 
-# ================= LOAD MODEL =================
 model = YOLO("best.pt")
 
-
-# ================= CSS =================
+# ================= MODERN UI CSS =================
 def load_css():
     st.markdown("""
     <style>
+
     .main-title {
-        font-size:40px;
-        font-weight:700;
-        color:#00C2FF;
+        font-size:42px;
+        font-weight:800;
+        color:#00D4FF;
         text-align:center;
+        margin-bottom:20px;
     }
-    .metric-box {
-        background:#1f2937;
+
+    .sub-text {
+        text-align:center;
+        color:#AAB4C3;
+        margin-bottom:30px;
+    }
+
+    .card {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        padding:20px;
+        border-radius:16px;
+        box-shadow:0px 0px 12px rgba(0,0,0,0.3);
+        color:white;
+        text-align:center;
+        transition:0.3s;
+    }
+
+    .card:hover {
+        transform: scale(1.02);
+        box-shadow:0px 0px 20px rgba(0,212,255,0.4);
+    }
+
+    .metric {
+        font-size:28px;
+        font-weight:bold;
+        color:#00ffcc;
+    }
+
+    .sidebar-box {
+        background:#111827;
         padding:15px;
         border-radius:10px;
-        text-align:center;
+        margin-bottom:10px;
         color:white;
     }
+
     </style>
     """, unsafe_allow_html=True)
 
 
-# ================= REPORT SYSTEM (FIXED) =================
+# ================= REPORT =================
 def generate_report(issue_type, location, image_path):
 
-    # ❗ FIX: NO timestamp parameter (avoids error)
-    pdf_path = create_pdf(issue_type, location, image_path)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    st.success("📄 Report Generated Successfully!")
+    pdf_path = create_pdf(
+        issue_type=issue_type,
+        location=location,
+        image_path=image_path,
+        timestamp=timestamp
+    )
+
+    st.success("📄 Government-Level Report Generated")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Smart Report",
+            "⬇ Download Official Report",
             f,
-            file_name="Urban_AI_Report.pdf",
+            file_name="Urban_AI_Gov_Report.pdf",
             mime="application/pdf"
         )
 
@@ -59,32 +94,40 @@ def generate_report(issue_type, location, image_path):
 # ================= DASHBOARD =================
 def dashboard():
 
-    st.markdown('<div class="main-title">🚀 Urban AI Smart City Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">🚀 URBAN AI COMMAND CENTER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-text">Smart City Monitoring & Automated Issue Detection System</div>', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.markdown('<div class="metric-box">🔥 Total Issues<br><h2>1240</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="card">🔥 TOTAL ISSUES<br><div class="metric">1240</div></div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="metric-box">✅ Resolved<br><h2>980</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="card">✅ RESOLVED<br><div class="metric">980</div></div>', unsafe_allow_html=True)
 
     with col3:
-        st.markdown('<div class="metric-box">⚠ Pending<br><h2>260</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="card">⚠ PENDING<br><div class="metric">260</div></div>', unsafe_allow_html=True)
+
+    with col4:
+        st.markdown('<div class="card">📍 ACTIVE ZONES<br><div class="metric">18</div></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # AI INSIGHT PANEL
+    st.info("🧠 AI Insight: Most issues detected in HIGH TRAFFIC urban zones between 6PM - 10PM")
 
 
 # ================= UPLOAD SECTION =================
 def upload_section():
 
-    st.title("📥 AI Issue Detection System")
+    st.title("📡 AI Vision Monitoring System")
 
-    input_type = st.radio("Select Input Type", ["Image", "Video", "Live Camera"])
+    input_type = st.radio("Select Input Mode", ["Image", "Video", "Live Camera"])
 
-    # ================= IMAGE =================
     if input_type == "Image":
 
-        image = st.file_uploader("Upload City Image", type=["jpg", "png", "jpeg"])
-        location = st.text_input("📍 Location", "Unknown Area")
+        image = st.file_uploader("Upload City Image", type=["jpg","png","jpeg"])
+        location = st.text_input("📍 Location (Auto GPS ready)", "Unknown Area")
 
         if image:
 
@@ -94,71 +137,64 @@ def upload_section():
             results = model.predict(img, conf=0.5)
             annotated = results[0].plot()
 
-            st.image(annotated, caption="AI Detection Result", use_container_width=True)
+            st.image(annotated, caption="AI Detection Output", use_container_width=True)
 
-            st.success("Detection Completed ✔")
-
-            detected_classes = []
+            detected = []
 
             for r in results:
                 for box in r.boxes:
+                    cls = int(box.cls[0])
+                    name = model.names[cls]
+                    if name.lower() != "person":
+                        detected.append(name)
 
-                    cls_id = int(box.cls[0])
-                    class_name = model.names[cls_id]
+            detected = list(set(detected))
 
-                    if class_name.lower() != "person":
-                        detected_classes.append(class_name)
+            st.success("Detection Completed ✔")
 
-            detected_classes = list(set(detected_classes))
-
-            st.write("### Detected Issues:")
-            for d in detected_classes:
+            st.write("### 🚨 Detected Issues")
+            for d in detected:
                 st.write("🔴", d)
 
-            if st.button("🚨 Generate Smart Report"):
+            if st.button("📄 Generate Government Report"):
 
-                image_path = f"report_{datetime.now().timestamp()}.jpg"
-                cv2.imwrite(image_path, img)
+                img_path = f"report_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(img_path, img)
 
-                for issue in detected_classes:
-                    generate_report(issue, location, image_path)
+                for issue in detected:
+                    generate_report(issue, location, img_path)
 
-
-    # ================= VIDEO =================
     elif input_type == "Video":
-        video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
-        if video:
-            st.video(video)
-            st.info("Video analysis coming in next update 🚀")
+        st.info("Video intelligence module upgrading... 🚧")
 
-
-    # ================= LIVE =================
     elif input_type == "Live Camera":
-        st.warning("Live mode enabled (basic preview only)")
-        st.info("Use image mode for accurate reporting")
+        st.warning("Live surveillance mode (Beta)")
 
 
 # ================= ANALYTICS =================
 def analytics():
 
-    st.title("📊 Analytics Dashboard")
+    st.title("📊 National Urban Analytics")
 
-    data = pd.DataFrame({
-        "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
-        "Reports": [320, 210, 150, 400, 160]
+    df = pd.DataFrame({
+        "Sector": ["Road", "Garbage", "Water", "Electricity", "Other"],
+        "Reports": [320, 210, 400, 150, 160]
     })
 
-    st.bar_chart(data.set_index("Category"))
+    st.bar_chart(df.set_index("Sector"))
+
+    st.success("📊 Trend: Road & Water issues are increasing in metropolitan zones")
 
 
 # ================= SETTINGS =================
 def settings():
 
-    st.title("⚙️ System Settings")
+    st.title("⚙️ System Control Panel")
 
-    st.checkbox("🔔 Enable Notifications")
-    st.checkbox("🌙 Dark Mode (UI)")
-    st.selectbox("Priority Level", ["Low", "Medium", "High"])
+    st.checkbox("Enable AI Auto Reporting")
+    st.checkbox("Enable Smart Alerts")
+    st.checkbox("Dark Mode (UI)")
+    st.selectbox("Priority Mode", ["Low", "Medium", "High", "Critical"])
 
 
 # ================= MAIN APP =================
@@ -167,16 +203,18 @@ def show_home():
     load_css()
 
     menu = st.sidebar.radio(
-        "🚀 Urban AI Menu",
-        ["🏠 Dashboard", "📥 Detect Issues", "📊 Analytics", "⚙️ Settings"]
+        "🚀 Urban AI Navigation",
+        ["🏠 Command Dashboard", "📡 Detection System", "📊 Analytics", "⚙️ Settings"]
     )
 
-    st.sidebar.success("Smart City AI System 🚀")
+    st.sidebar.markdown("---")
+    st.sidebar.success("🟢 System Online")
+    st.sidebar.info("AI Model: YOLOv8 Active")
 
-    if menu == "🏠 Dashboard":
+    if menu == "🏠 Command Dashboard":
         dashboard()
 
-    elif menu == "📥 Detect Issues":
+    elif menu == "📡 Detection System":
         upload_section()
 
     elif menu == "📊 Analytics":
