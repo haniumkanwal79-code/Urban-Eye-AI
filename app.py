@@ -63,15 +63,33 @@ Please check attached PDF report.
         st.error(f"Report Error: {e}")
 
 
+# ================= 🔐 FIREBASE SIGNUP =================
+def firebase_signup():
+
+    st.subheader("🆕 Create New Account")
+
+    email = st.text_input("Signup Email")
+    password = st.text_input("Signup Password", type="password")
+
+    if st.button("Create Account"):
+
+        try:
+            auth.create_user_with_email_and_password(email, password)
+            st.success("Account Created Successfully 🚀 Now Login")
+
+        except Exception as e:
+            st.error(f"Signup Failed ❌ {e}")
+
+
 # ================= 🔐 FIREBASE LOGIN =================
 def firebase_login():
 
-    st.title("🔐 Urban AI Login (Firebase)")
+    st.subheader("🔐 Login")
 
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
+    email = st.text_input("Login Email")
+    password = st.text_input("Login Password", type="password")
 
-    if st.button("Login with Firebase"):
+    if st.button("Login"):
 
         try:
             user = auth.sign_in_with_email_and_password(email, password)
@@ -89,7 +107,14 @@ def firebase_login():
 # ================= ROUTING =================
 if not st.session_state.logged_in:
 
-    firebase_login()
+    menu = st.radio("Choose Action", ["Login", "Sign Up"])
+
+    if menu == "Login":
+        firebase_login()
+
+    else:
+        firebase_signup()
+
     st.stop()
 
 
