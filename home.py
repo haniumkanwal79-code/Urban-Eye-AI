@@ -8,6 +8,9 @@ from pdf_utils import create_pdf
 import os
 import time
 
+# 🔥 FIX ADDED
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+
 # ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="Urban AI Command Center",
@@ -162,32 +165,20 @@ def upload_section():
         st.info("Video module upgrading 🚧")
 
 
-    # ================= LIVE CAMERA (FIXED + CAPTURE BUTTON) =================
+    # ================= LIVE CAMERA (FIXED) =================
     elif input_type == "Live Camera":
 
-        st.warning("🎥 Live Surveillance Mode Active")
+        st.warning("🎥 Live Surveillance Mode Active (FIXED)")
 
         location = st.text_input("📍 Location", "Unknown Area")
 
-        start = st.checkbox("▶ Start Camera")
+        class VideoProcessor(VideoTransformerBase):
 
-        frame_placeholder = st.image([])
+            def transform(self, frame):
 
-        cap = cv2.VideoCapture(0)
+                img = frame.to_ndarray(format="bgr24")
 
-        if start:
-
-            while True:
-
-                ret, frame = cap.read()
-                if not ret:
-                    st.error("Camera not working")
-                    break
-
-                results = model.predict(frame, conf=0.5)
-                annotated = results[0].plot()
-
-                frame_placeholder.image(annotated, channels="BGR")
+                results = model.predict(img, conf=0.5)
 
                 detected = []
 
@@ -199,27 +190,38 @@ def upload_section():
                         if name.lower() != "person":
                             detected.append(name)
 
-                detected = list(set(detected))
+                        x1, y1, x2, y2 = map(int, box.xyxy[0])
+                        cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,0), 2)
+                        cv2.putText(img, name, (x1,y1-10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                                    (0,255,0), 2)
 
                 if len(detected) > 0:
+                    st.session_state.last_frame = img.copy()
+                    st.session_state.last_detected = list(set(detected))
 
-                    st.warning(f"🚨 Detected: {detected}")
+                return img
 
-                    st.session_state.frame = frame.copy()
-                    st.session_state.detected = detected
+        webrtc_streamer(
+            key="live-camera",
+            video_transformer_factory=VideoProcessor,
+            media_stream_constraints={
+                "video": True,
+                "audio": False
+            }
+        )
 
-                    if st.button("✔ Capture & Generate Report"):
+        if st.button("✔ Capture & Generate Report from Live Frame"):
 
-                        img_path = f"live_{datetime.now().timestamp()}.jpg"
-                        cv2.imwrite(img_path, st.session_state.frame)
+            if "last_frame" in st.session_state:
 
-                        for issue in st.session_state.detected:
-                            generate_report(issue, location, img_path)
+                img_path = f"live_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(img_path, st.session_state.last_frame)
 
-                        st.success("Report Generated from Live Camera")
-                        break
+                for issue in st.session_state.last_detected:
+                    generate_report(issue, location, img_path)
 
-        cap.release()
+                st.success("Report Generated from Live Camera")
 
 
 # ================= ANALYTICS =================
