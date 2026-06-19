@@ -8,11 +8,11 @@ import os
 def create_pdf(issue_type, location, image_path=None, timestamp=None):
     """
     Government-level Smart City Report Generator
-    Compatible with Image / Video / Live Camera
+    Supports: Image + Video Frame + Live Camera Snapshot
     """
 
     # ================= SAFE TIMESTAMP =================
-    if timestamp is None:
+    if not timestamp:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # ================= FILE NAME =================
@@ -40,15 +40,26 @@ def create_pdf(issue_type, location, image_path=None, timestamp=None):
     content.append(Paragraph(f"<b>📍 Location:</b> {location}", styles["Normal"]))
     content.append(Spacer(1, 12))
 
-    # ================= EVIDENCE IMAGE =================
-    if image_path and os.path.exists(image_path):
-        try:
-            img = RLImage(image_path, width=420, height=280)
-            content.append(Paragraph("<b>📷 Evidence Capture:</b>", styles["Normal"]))
-            content.append(Spacer(1, 8))
-            content.append(img)
-        except Exception as e:
-            content.append(Paragraph(f"⚠ Image load failed: {str(e)}", styles["Normal"]))
+    # ================= EVIDENCE IMAGE (FIXED FOR VIDEO + LIVE FRAME) =================
+    if image_path:
+
+        # ensure file exists
+        if os.path.exists(image_path):
+
+            try:
+                img = RLImage(image_path, width=420, height=280)
+                content.append(Paragraph("<b>📷 Evidence Capture:</b>", styles["Normal"]))
+                content.append(Spacer(1, 8))
+                content.append(img)
+
+            except Exception as e:
+                content.append(
+                    Paragraph(f"⚠ Image rendering failed: {str(e)}", styles["Normal"])
+                )
+
+        else:
+            content.append(Paragraph("⚠ Evidence image path not found", styles["Normal"]))
+
     else:
         content.append(Paragraph("⚠ No Evidence Image Provided", styles["Normal"]))
 
