@@ -1,7 +1,6 @@
 import streamlit as st
 import database as db
 import os
-import webbrowser
 
 # ================= REPORT SYSTEM =================
 from pdf_utils import create_pdf
@@ -29,6 +28,8 @@ db.create_table()
 os.makedirs("reports", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
 
+st.write("DB exists:", os.path.exists("issues.db"))
+
 # ================= SESSION =================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -37,7 +38,7 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 
-# ================= REPORT SYSTEM =================
+# ================= 🚨 REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
     try:
@@ -62,7 +63,7 @@ Please check attached PDF report.
         st.error(f"Report Error: {e}")
 
 
-# ================= FIREBASE SIGNUP =================
+# ================= 🔐 FIREBASE SIGNUP =================
 def firebase_signup():
 
     st.subheader("🆕 Create New Account")
@@ -80,7 +81,7 @@ def firebase_signup():
             st.error(f"Signup Failed ❌ {e}")
 
 
-# ================= FIREBASE LOGIN =================
+# ================= 🔐 FIREBASE LOGIN =================
 def firebase_login():
 
     st.subheader("🔐 Login")
@@ -103,36 +104,16 @@ def firebase_login():
             st.error(f"Login Failed ❌ {e}")
 
 
-# ================= GOOGLE LOGIN UI (OPTIONAL BUTTON) =================
-def google_login_ui():
-
-    st.subheader("🔵 Sign in with Google")
-
-    if st.button("Continue with Google"):
-
-        # Firebase handles Google login in real setup
-        st.info("Redirecting to Google login...")
-
-        webbrowser.open("https://accounts.google.com")
-
-        st.warning("Complete login in browser then return here.")
-
-
 # ================= ROUTING =================
 if not st.session_state.logged_in:
 
-    st.title("🚀 Urban AI Login System")
-
-    menu = st.radio("Choose Login Method", ["Login", "Sign Up", "Google Login"])
+    menu = st.radio("Choose Action", ["Login", "Sign Up"])
 
     if menu == "Login":
         firebase_login()
 
-    elif menu == "Sign Up":
-        firebase_signup()
-
     else:
-        google_login_ui()
+        firebase_signup()
 
     st.stop()
 
