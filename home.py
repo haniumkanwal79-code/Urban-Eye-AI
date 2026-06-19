@@ -18,7 +18,7 @@ def show_home():
     # ================= MODEL =================
     model = YOLO("best.pt")
 
-    # ================= SESSION INIT =================
+    # ================= SESSION =================
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = True
 
@@ -32,10 +32,6 @@ def show_home():
     if "menu" not in st.session_state:
         st.session_state.menu = "🏠 Home"
 
-    if st.session_state.menu not in menu_options:
-        st.session_state.menu = "🏠 Home"
-
-    # ================= SIDEBAR =================
     st.sidebar.title("🚀 Urban Issue Reporter")
     st.sidebar.markdown("---")
 
@@ -56,17 +52,15 @@ def show_home():
     # ================= HOME =================
     if menu == "🏠 Home":
 
-        st.markdown("## 🚀 Urban Issue Reporter Dashboard")
-        st.write("Welcome to AI-based urban issue detection system")
+        st.title("🚀 Urban Issue Reporter Dashboard")
+        st.write("AI-based urban issue detection system")
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
             st.info("📍 Reports Module")
-
         with col2:
             st.success("🤖 AI Detection")
-
         with col3:
             st.warning("📊 Analytics")
 
@@ -103,53 +97,12 @@ def show_home():
 
                 img = cv2.imdecode(file_bytes, 1)
 
-                results = model(img)
+                results = model.predict(img)
                 annotated = results[0].plot()
 
-                st.image(
-                    annotated,
-                    use_container_width=True
-                )
+                st.image(annotated, use_container_width=True)
 
-                # ================= DATABASE SAVE =================
-                import os
-                from datetime import datetime
-                import database as db
-
-                os.makedirs("uploads", exist_ok=True)
-
-                image.seek(0)
-
-                file_name = (
-                    f"uploads/{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
-                )
-
-                with open(file_name, "wb") as f:
-                    f.write(image.getbuffer())
-
-                conn = db.get_connection()
-                c = conn.cursor()
-
-                c.execute(
-                    """
-                    INSERT INTO issues
-                    (title, category, image_path, status)
-                    VALUES (?, ?, ?, ?)
-                    """,
-                    (
-                        "Road Issue",
-                        "Road",
-                        file_name,
-                        "Pending"
-                    )
-                )
-
-                conn.commit()
-                conn.close()
-
-                st.success(
-                    "🚀 Issue saved to database successfully!"
-                )
+                st.success("Detection Done 🚀")
 
         # ================= VIDEO =================
         elif input_type == "Video":
@@ -161,24 +114,35 @@ def show_home():
 
             if video is not None:
                 st.video(video)
-                st.warning(
-                    "Video processing pipeline coming soon 🚀"
-                )
+                st.warning("Video processing coming soon 🚀")
 
-        # ================= LIVE CAMERA =================
+        # ================= LIVE CAMERA (WITH SENSITIVITY) =================
         elif input_type == "Live Camera":
+
+            st.subheader("🎯 AI Detection Sensitivity")
+
+            confidence = st.slider(
+                "Model Sensitivity",
+                0.10,
+                1.00,
+                0.50,
+                0.05
+            )
 
             class YOLOCamera(VideoTransformerBase):
 
                 def __init__(self):
                     self.model = model
+                    self.conf = confidence
 
                 def transform(self, frame):
-                    img = frame.to_ndarray(
-                        format="bgr24"
-                    )
 
-                    results = self.model(img)
+                    img = frame.to_ndarray(format="bgr24")
+
+                    results = self.model.predict(
+                        img,
+                        conf=self.conf
+                    )
 
                     return results[0].plot()
 
@@ -191,73 +155,38 @@ def show_home():
                 }
             )
 
+            st.info(f"Current Sensitivity: {confidence}")
+
     # ================= ANALYTICS =================
     elif menu == "📊 Analytics":
 
         st.title("📊 Analytics Dashboard")
 
         data = {
-            "Category": [
-                "Road",
-                "Garbage",
-                "Street Light",
-                "Water",
-                "Other"
-            ],
-            "Count": [
-                320,
-                210,
-                150,
-                400,
-                160
-            ]
+            "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
+            "Count": [320, 210, 150, 400, 160]
         }
 
         df = pd.DataFrame(data)
-
-        st.bar_chart(
-            df.set_index("Category")
-        )
+        st.bar_chart(df.set_index("Category"))
 
         status = {
-            "Status": [
-                "Resolved",
-                "Pending",
-                "In Progress"
-            ],
-            "Count": [
-                980,
-                260,
-                120
-            ]
+            "Status": ["Resolved", "Pending", "In Progress"],
+            "Count": [980, 260, 120]
         }
 
         df2 = pd.DataFrame(status)
+        st.bar_chart(df2.set_index("Status"))
 
-        st.bar_chart(
-            df2.set_index("Status")
-        )
-
-        st.success(
-            "Live analytics system (demo data)"
-        )
+        st.success("Live analytics system (demo data)")
 
     # ================= SETTINGS =================
     elif menu == "⚙️ Settings":
 
         st.title("⚙️ Settings")
 
-        st.write(
-            "User preferences and configuration panel"
-        )
-
-        st.checkbox(
-            "Enable Notifications"
-        )
-
-        st.checkbox(
-            "Dark Mode (UI only demo)"
-        )
+        st.checkbox("Enable Notifications")
+        st.checkbox("Dark Mode (UI only demo)")
 
         st.selectbox(
             "Report Priority Default",
