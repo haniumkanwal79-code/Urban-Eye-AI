@@ -8,63 +8,87 @@ from pdf_utils import create_pdf
 import os
 import time
 
-# 🔥 FIX ADDED
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
-    page_title="Urban AI Command Center",
-    page_icon="🚀",
-    layout="wide"
+    page_title="🏛 National Urban Intelligence System",
+    page_icon="🏛",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 model = YOLO("best.pt")
 
-# ================= MODERN UI CSS =================
+# ================= PREMIUM CSS (GOV STYLE UI) =================
 def load_css():
+
     st.markdown("""
     <style>
 
-    .main-title {
-        font-size:42px;
-        font-weight:800;
-        color:#00D4FF;
-        text-align:center;
-        margin-bottom:20px;
+    body {
+        background: #0b1220;
     }
 
-    .sub-text {
+    .gov-title {
+        font-size:44px;
+        font-weight:900;
         text-align:center;
-        color:#AAB4C3;
+        color:#00e5ff;
+        letter-spacing:2px;
+        margin-bottom:5px;
+    }
+
+    .gov-subtitle {
+        text-align:center;
+        color:#9fb3c8;
         margin-bottom:30px;
+        font-size:16px;
     }
 
-    .card {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        padding:20px;
-        border-radius:16px;
-        box-shadow:0px 0px 12px rgba(0,0,0,0.3);
+    .gov-card {
+        background: linear-gradient(135deg, #0f172a, #111c33);
+        padding:22px;
+        border-radius:18px;
+        box-shadow:0px 0px 20px rgba(0,229,255,0.08);
         color:white;
         text-align:center;
+        border:1px solid rgba(0,229,255,0.1);
         transition:0.3s;
     }
 
-    .card:hover {
-        transform: scale(1.02);
-        box-shadow:0px 0px 20px rgba(0,212,255,0.4);
+    .gov-card:hover {
+        transform: scale(1.03);
+        box-shadow:0px 0px 25px rgba(0,229,255,0.25);
     }
 
-    .metric {
-        font-size:28px;
-        font-weight:bold;
+    .metric-big {
+        font-size:30px;
+        font-weight:900;
         color:#00ffcc;
+    }
+
+    .status-bar {
+        background:#0f172a;
+        padding:10px;
+        border-radius:10px;
+        border:1px solid #1f2a44;
+        color:#9fb3c8;
+    }
+
+    .alert-box {
+        background:#1b1f36;
+        border-left:5px solid #00e5ff;
+        padding:12px;
+        border-radius:10px;
+        color:white;
     }
 
     </style>
     """, unsafe_allow_html=True)
 
 
-# ================= REPORT =================
+# ================= REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -76,53 +100,60 @@ def generate_report(issue_type, location, image_path):
         timestamp=timestamp
     )
 
-    st.success("📄 Government-Level Report Generated")
+    st.success("🏛 Official Government Report Generated")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Official Report",
+            "⬇ Download Official Report (Gov Format)",
             f,
-            file_name="Urban_AI_Gov_Report.pdf",
+            file_name="National_Urban_Report.pdf",
             mime="application/pdf"
         )
 
 
-# ================= DASHBOARD =================
+# ================= GOVERNMENT DASHBOARD =================
 def dashboard():
 
-    st.markdown('<div class="main-title">🚀 URBAN AI COMMAND CENTER</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-text">Smart City Monitoring & Automated Issue Detection System</div>', unsafe_allow_html=True)
+    st.markdown('<div class="gov-title">🏛 NATIONAL URBAN INTELLIGENCE CENTER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="gov-subtitle">Real-Time Smart City Monitoring & Automated Enforcement System</div>', unsafe_allow_html=True)
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.markdown('<div class="card">🔥 TOTAL ISSUES<br><div class="metric">1240</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="gov-card">🔥 TOTAL INCIDENTS<br><div class="metric-big">1240</div></div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="card">✅ RESOLVED<br><div class="metric">980</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="gov-card">✅ RESOLVED CASES<br><div class="metric-big">980</div></div>', unsafe_allow_html=True)
 
     with col3:
-        st.markdown('<div class="card">⚠ PENDING<br><div class="metric">260</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="gov-card">⚠ ACTIVE ALERTS<br><div class="metric-big">260</div></div>', unsafe_allow_html=True)
 
     with col4:
-        st.markdown('<div class="card">📍 ACTIVE ZONES<br><div class="metric">18</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="gov-card">📍 MONITORED ZONES<br><div class="metric-big">18</div></div>', unsafe_allow_html=True)
 
     st.markdown("---")
-    st.info("🧠 AI Insight: Peak issues detected in urban high traffic zones (6PM–10PM)")
+
+    st.markdown("""
+    <div class="alert-box">
+    🧠 AI GOVERNMENT INSIGHT:  
+    High violation density detected in metropolitan highway zones between 6PM - 11PM.
+    Enforcement units recommended for deployment.
+    </div>
+    """, unsafe_allow_html=True)
 
 
-# ================= UPLOAD SECTION =================
+# ================= DETECTION SYSTEM =================
 def upload_section():
 
-    st.title("📡 AI Vision Monitoring System")
+    st.title("📡 AI Surveillance & Detection Grid")
 
-    input_type = st.radio("Select Input Mode", ["Image", "Video", "Live Camera"])
+    mode = st.radio("Select Mode", ["Image", "Video", "Live Camera"])
 
     # ================= IMAGE =================
-    if input_type == "Image":
+    if mode == "Image":
 
-        image = st.file_uploader("Upload City Image", type=["jpg","png","jpeg"])
-        location = st.text_input("📍 Location", "Unknown Area")
+        image = st.file_uploader("Upload City Evidence Image", type=["jpg","png","jpeg"])
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
 
         if image:
 
@@ -140,6 +171,7 @@ def upload_section():
                 for box in r.boxes:
                     cls = int(box.cls[0])
                     name = model.names[cls]
+
                     if name.lower() != "person":
                         detected.append(name)
 
@@ -147,32 +179,30 @@ def upload_section():
 
             st.success("Detection Completed ✔")
 
-            st.write("### 🚨 Detected Issues")
+            st.markdown("### 🚨 Violation Reported Objects")
             for d in detected:
                 st.write("🔴", d)
 
             if st.button("📄 Generate Government Report"):
 
-                img_path = f"report_{datetime.now().timestamp()}.jpg"
+                img_path = f"gov_report_{datetime.now().timestamp()}.jpg"
                 cv2.imwrite(img_path, img)
 
                 for issue in detected:
                     generate_report(issue, location, img_path)
 
-
     # ================= VIDEO =================
-    elif input_type == "Video":
-        st.info("Video module upgrading 🚧")
+    elif mode == "Video":
+        st.info("📡 Video intelligence module under government upgrade phase")
 
+    # ================= LIVE CAMERA (ULTRA FIXED) =================
+    elif mode == "Live Camera":
 
-    # ================= LIVE CAMERA (FIXED) =================
-    elif input_type == "Live Camera":
+        st.warning("🔴 LIVE NATIONAL SURVEILLANCE ACTIVE")
 
-        st.warning("🎥 Live Surveillance Mode Active (FIXED)")
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
 
-        location = st.text_input("📍 Location", "Unknown Area")
-
-        class VideoProcessor(VideoTransformerBase):
+        class GovCamera(VideoTransformerBase):
 
             def transform(self, frame):
 
@@ -191,10 +221,10 @@ def upload_section():
                             detected.append(name)
 
                         x1, y1, x2, y2 = map(int, box.xyxy[0])
-                        cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,0), 2)
+                        cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,255), 2)
                         cv2.putText(img, name, (x1,y1-10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7,
-                                    (0,255,0), 2)
+                                    (0,255,255), 2)
 
                 if len(detected) > 0:
                     st.session_state.last_frame = img.copy()
@@ -203,48 +233,48 @@ def upload_section():
                 return img
 
         webrtc_streamer(
-            key="live-camera",
-            video_transformer_factory=VideoProcessor,
-            media_stream_constraints={
-                "video": True,
-                "audio": False
-            }
+            key="gov-live",
+            video_transformer_factory=GovCamera,
+            media_stream_constraints={"video": True, "audio": False}
         )
 
-        if st.button("✔ Capture & Generate Report from Live Frame"):
+        if st.button("📸 CAPTURE & ISSUE GOVERNMENT REPORT"):
 
             if "last_frame" in st.session_state:
 
-                img_path = f"live_{datetime.now().timestamp()}.jpg"
+                img_path = f"gov_live_{datetime.now().timestamp()}.jpg"
                 cv2.imwrite(img_path, st.session_state.last_frame)
 
                 for issue in st.session_state.last_detected:
                     generate_report(issue, location, img_path)
 
-                st.success("Report Generated from Live Camera")
+                st.success("🏛 Official Report Issued from Live Surveillance")
 
 
 # ================= ANALYTICS =================
 def analytics():
 
-    st.title("📊 Analytics Dashboard")
+    st.title("📊 National Intelligence Analytics")
 
     df = pd.DataFrame({
-        "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
-        "Reports": [320, 210, 150, 400, 160]
+        "Sector": ["Road", "Garbage", "Water", "Electricity", "Other"],
+        "Reports": [320, 210, 400, 150, 160]
     })
 
-    st.bar_chart(df.set_index("Category"))
+    st.bar_chart(df.set_index("Sector"))
+
+    st.success("📊 AI Trend: Infrastructure issues rising in urban core zones")
 
 
 # ================= SETTINGS =================
 def settings():
 
-    st.title("⚙️ System Settings")
+    st.title("⚙️ Government Control Panel")
 
-    st.checkbox("Enable Notifications")
-    st.checkbox("Dark Mode")
-    st.selectbox("Priority Level", ["Low", "Medium", "High", "Critical"])
+    st.checkbox("Enable National AI Alerts")
+    st.checkbox("Enable Surveillance Logging")
+    st.checkbox("Dark Government Mode")
+    st.selectbox("Priority Enforcement Level", ["Low", "Medium", "High", "Critical"])
 
 
 # ================= MAIN APP =================
@@ -253,16 +283,17 @@ def show_home():
     load_css()
 
     menu = st.sidebar.radio(
-        "🚀 Urban AI Navigation",
-        ["🏠 Dashboard", "📡 Detection System", "📊 Analytics", "⚙️ Settings"]
+        "🏛 National Control Menu",
+        ["🏛 Dashboard", "📡 Surveillance Grid", "📊 Analytics", "⚙️ Settings"]
     )
 
-    st.sidebar.success("🟢 System Online")
+    st.sidebar.markdown("### 🟢 SYSTEM STATUS: ACTIVE")
+    st.sidebar.info("AI MODEL: YOLOv8 GOV EDITION")
 
-    if menu == "🏠 Dashboard":
+    if menu == "🏛 Dashboard":
         dashboard()
 
-    elif menu == "📡 Detection System":
+    elif menu == "📡 Surveillance Grid":
         upload_section()
 
     elif menu == "📊 Analytics":
