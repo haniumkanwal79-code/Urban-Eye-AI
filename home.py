@@ -3,103 +3,195 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import pandas as pd
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from datetime import datetime
 from pdf_utils import create_pdf
 import os
 
-# ================= SAFE GPS (NO EXTRA LIB REQUIRED) =================
-def get_location():
-    location = st.text_input("📍 Enter your location (auto GPS optional)", "Unknown")
-    return location
+# ================= PAGE CONFIG =================
+st.set_page_config(
+    page_title="Urban AI Smart Dashboard",
+    page_icon="🚀",
+    layout="wide"
+)
+
+# ================= LOAD MODEL =================
+model = YOLO("best.pt")
 
 
-# ================= PDF SYSTEM =================
+# ================= CSS (MODERN UI) =================
+def load_css():
+    st.markdown("""
+    <style>
+    .main-title {
+        font-size:40px;
+        font-weight:700;
+        color:#00C2FF;
+    }
+    .card {
+        padding:20px;
+        border-radius:15px;
+        background:#111827;
+        color:white;
+        margin-bottom:10px;
+    }
+    .metric-box {
+        background:#1f2937;
+        padding:15px;
+        border-radius:10px;
+        text-align:center;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+# ================= REPORT GENERATOR =================
 def generate_report(issue_type, location, image_path):
 
-    pdf_path = create_pdf(issue_type, location, image_path)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    st.success("📄 PDF Generated")
+    pdf_path = create_pdf(
+        issue_type=issue_type,
+        location=location,
+        image_path=image_path,
+        timestamp=timestamp
+    )
+
+    st.success("📄 Professional Report Generated!")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Report",
-            f,
-            file_name="report.pdf",
+            label="⬇ Download Smart Report",
+            data=f,
+            file_name="Urban_AI_Report.pdf",
             mime="application/pdf"
         )
 
 
-# ================= MAIN =================
+# ================= HOME DASHBOARD =================
+def dashboard():
+
+    st.markdown('<div class="main-title">🚀 Urban AI Smart City Dashboard</div>', unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown('<div class="metric-box">🔥 Total Issues<br><h2>1240</h2></div>', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<div class="metric-box">✅ Resolved<br><h2>980</h2></div>', unsafe_allow_html=True)
+
+    with col3:
+        st.markdown('<div class="metric-box">⚠ Pending<br><h2>260</h2></div>', unsafe_allow_html=True)
+
+
+# ================= UPLOAD SECTION =================
+def upload_section():
+
+    st.title("📥 AI Issue Detection System")
+
+    input_type = st.radio("Select Input Type", ["Image", "Video", "Live Camera"])
+
+    # ================= IMAGE =================
+    if input_type == "Image":
+
+        image = st.file_uploader("Upload City Image", type=["jpg", "png", "jpeg"])
+        location = st.text_input("📍 Location", "Unknown Area")
+
+        if image:
+
+            file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+            img = cv2.imdecode(file_bytes, 1)
+
+            results = model.predict(img, conf=0.5)
+            annotated = results[0].plot()
+
+            st.image(annotated, caption="AI Detection Result", use_container_width=True)
+
+            st.success("Detection Completed ✔")
+
+            detected_classes = []
+
+            for r in results:
+                for box in r.boxes:
+
+                    cls_id = int(box.cls[0])
+                    class_name = model.names[cls_id]
+
+                    if class_name.lower() != "person":
+                        detected_classes.append(class_name)
+
+            detected_classes = list(set(detected_classes))
+
+            st.write("### Detected Issues:")
+            for d in detected_classes:
+                st.write("🔴", d)
+
+            if st.button("🚨 Generate Smart Report"):
+
+                image_path = f"report_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(image_path, img)
+
+                for issue in detected_classes:
+                    generate_report(issue, location, image_path)
+
+
+    # ================= VIDEO =================
+    elif input_type == "Video":
+        video = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
+        if video:
+            st.video(video)
+            st.info("Video analysis coming in next update 🚀")
+
+
+    # ================= LIVE =================
+    elif input_type == "Live Camera":
+        st.warning("Live mode enabled (basic preview only)")
+        st.info("Use image mode for accurate reporting")
+
+
+# ================= ANALYTICS =================
+def analytics():
+
+    st.title("📊 Analytics Dashboard")
+
+    data = pd.DataFrame({
+        "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
+        "Reports": [320, 210, 150, 400, 160]
+    })
+
+    st.bar_chart(data.set_index("Category"))
+
+
+# ================= SETTINGS =================
+def settings():
+
+    st.title("⚙️ System Settings")
+
+    st.checkbox("🔔 Enable Notifications")
+    st.checkbox("🌙 Dark Mode (UI)")
+    st.selectbox("Priority Level", ["Low", "Medium", "High"])
+
+
+# ================= MAIN APP =================
 def show_home():
 
-    model = YOLO("best.pt")
-
-    if "menu" not in st.session_state:
-        st.session_state.menu = "🏠 Home"
+    load_css()
 
     menu = st.sidebar.radio(
-        "Menu",
-        ["🏠 Home", "📥 Upload Issue", "📊 Analytics", "⚙️ Settings"]
+        "🚀 Urban AI Menu",
+        ["🏠 Dashboard", "📥 Detect Issues", "📊 Analytics", "⚙️ Settings"]
     )
 
-    # ================= HOME =================
-    if menu == "🏠 Home":
-        st.title("Urban AI Dashboard")
+    st.sidebar.success("Smart City AI System")
 
-    # ================= UPLOAD =================
-    elif menu == "📥 Upload Issue":
+    if menu == "🏠 Dashboard":
+        dashboard()
 
-        st.title("Upload Issue")
+    elif menu == "📥 Detect Issues":
+        upload_section()
 
-        input_type = st.radio("Input", ["Image", "Video", "Live Camera"])
-
-        # ================= IMAGE =================
-        if input_type == "Image":
-
-            image = st.file_uploader("Upload Image", type=["jpg","png"])
-            location = get_location()
-
-            if image:
-
-                file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
-                img = cv2.imdecode(file_bytes, 1)
-
-                results = model.predict(img, conf=0.5)
-                annotated = results[0].plot()
-
-                st.image(annotated)
-
-                if st.button("Generate Report"):
-
-                    for r in results:
-                        for box in r.boxes:
-
-                            cls_id = int(box.cls[0])
-                            class_name = model.names[cls_id]
-
-                            if class_name.lower() == "person":
-                                continue
-
-                            img_path = f"report_{class_name}.jpg"
-                            cv2.imwrite(img_path, img)
-
-                            generate_report(class_name, location, img_path)
-
-        # ================= LIVE =================
-        elif input_type == "Live Camera":
-
-            st.warning("Live GPS auto not supported in Streamlit Web safely")
-            location = get_location()
-
-            st.info(f"Location: {location}")
-
-    # ================= OTHER =================
     elif menu == "📊 Analytics":
-        st.bar_chart(pd.DataFrame({
-            "Category": ["Road","Garbage"],
-            "Count": [10,20]
-        }))
-
+        analytics()
 
     elif menu == "⚙️ Settings":
-        st.checkbox("Enable Notifications")
+        settings()
