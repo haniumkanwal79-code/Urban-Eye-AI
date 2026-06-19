@@ -7,22 +7,16 @@ from pdf_utils import create_pdf
 from email_utils import send_email
 
 # ================= FIREBASE AUTH =================
-import pyrebase4 as pyrebase
+import pyrebase
 
-# 🔥 Firebase config (CONVERTED FROM JS)
 firebaseConfig = {
     "apiKey": "AIzaSyBg4jTdlcrqKwNa0115fJN6rQsUtorZp58",
     "authDomain": "urban-ai-145b8.firebaseapp.com",
     "projectId": "urban-ai-145b8",
-
-    # ⚠️ FIXED STORAGE BUCKET
     "storageBucket": "urban-ai-145b8.appspot.com",
-
     "messagingSenderId": "747825183051",
     "appId": "1:747825183051:web:6cb5fc015813525808d0ce",
-
-    # required by pyrebase
-    "databaseURL": ""
+    "databaseURL": "https://urban-ai-145b8.firebaseio.com"
 }
 
 firebase = pyrebase.initialize_app(firebaseConfig)
@@ -53,12 +47,12 @@ def generate_report(issue_type, location, image_path):
         subject = f"🚨 Urban Issue Detected: {issue_type}"
 
         body = f"""
-        🚨 New Urban Issue Detected
+🚨 New Urban Issue Detected
 
-        Issue Type: {issue_type}
-        Location: {location}
+Issue Type: {issue_type}
+Location: {location}
 
-        Please check attached PDF report.
+Please check attached PDF report.
         """
 
         send_email(subject, body, pdf_path)
