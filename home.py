@@ -5,20 +5,45 @@ import cv2
 import pandas as pd
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
+# ================= EXTRA IMPORTS =================
+from pdf_utils import create_pdf
+from email_utils import send_email
+import os
+
 # ================= CSS =================
 def load_css():
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ================= REPORT SYSTEM =================
+def generate_report(issue_type, location, image_path):
+
+    # 1. CREATE PDF
+    pdf_path = create_pdf(issue_type, location, image_path)
+
+    # 2. EMAIL CONTENT
+    subject = f"🚨 Urban Issue Detected: {issue_type}"
+
+    body = f"""
+    New Urban Issue Detected 🚨
+
+    Issue Type: {issue_type}
+    Location: {location}
+
+    Please find attached PDF report.
+    """
+
+    # 3. SEND EMAIL
+    send_email(subject, body, pdf_path)
+
 
 # ================= MAIN =================
 def show_home():
 
     load_css()
 
-    # ================= MODEL =================
     model = YOLO("best.pt")
 
-    # ================= SESSION =================
     if "menu" not in st.session_state:
         st.session_state.menu = "🏠 Home"
 
@@ -52,17 +77,6 @@ def show_home():
 
         st.write("AI-based Smart City Issue Detection System")
 
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.info("📍 Reports Module")
-        with col2:
-            st.success("🤖 AI Detection")
-        with col3:
-            st.warning("📊 Analytics")
-
-        st.markdown("---")
-
         st.metric("Total Complaints", "1240")
         st.metric("Resolved", "980")
         st.metric("Pending", "260")
@@ -80,18 +94,13 @@ def show_home():
         # ================= IMAGE =================
         if input_type == "Image":
 
-            image = st.file_uploader(
-                "Upload Image",
-                type=["jpg", "jpeg", "png"]
-            )
+            image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+
+            location = st.text_input("Enter Location", "Unknown")
 
             if image is not None:
 
-                file_bytes = np.asarray(
-                    bytearray(image.read()),
-                    dtype=np.uint8
-                )
-
+                file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
                 img = cv2.imdecode(file_bytes, 1)
 
                 results = model.predict(img, conf=0.5)
@@ -99,19 +108,31 @@ def show_home():
 
                 st.image(annotated, use_container_width=True)
 
-                st.success("Detection Completed 🚀")
+                # ================= AUTO REPORT =================
+                for r in results:
+                    for box in r.boxes:
+
+                        cls_id = int(box.cls[0])
+                        class_name = model.names[cls_id]
+
+                        if class_name.lower() == "person":
+                            continue
+
+                        image_path = f"temp_{class_name}.jpg"
+                        cv2.imwrite(image_path, img)
+
+                        generate_report(class_name, location, image_path)
+
+                st.success("Detection + Report Sent 🚀")
 
         # ================= VIDEO =================
         elif input_type == "Video":
 
-            video = st.file_uploader(
-                "Upload Video",
-                type=["mp4", "avi", "mov"]
-            )
+            video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
 
             if video is not None:
                 st.video(video)
-                st.warning("Video processing coming soon 🚀")
+                st.warning("Video reporting coming soon 🚀")
 
         # ================= LIVE CAMERA =================
         elif input_type == "Live Camera":
@@ -126,6 +147,8 @@ def show_home():
                 0.05
             )
 
+            location = st.text_input("Enter Location", "Unknown")
+
             class YOLOCamera(VideoTransformerBase):
 
                 def __init__(self):
@@ -136,45 +159,31 @@ def show_home():
 
                     img = frame.to_ndarray(format="bgr24")
 
-                    results = self.model.predict(
-                        img,
-                        conf=self.conf
-                    )
+                    results = self.model.predict(img, conf=self.conf)
 
                     frame_out = img.copy()
 
                     for r in results:
-                        boxes = r.boxes
-
-                        for box in boxes:
+                        for box in r.boxes:
 
                             cls_id = int(box.cls[0])
                             class_name = self.model.names[cls_id]
 
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                            # ================= PERSON FILTER =================
                             if class_name.lower() == "person":
                                 continue
 
-                            # ================= DRAW =================
-                            cv2.rectangle(
-                                frame_out,
-                                (x1, y1),
-                                (x2, y2),
-                                (0, 255, 0),
-                                2
-                            )
+                            x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                            cv2.putText(
-                                frame_out,
-                                class_name,
-                                (x1, y1 - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.7,
-                                (0, 255, 0),
-                                2
-                            )
+                            cv2.rectangle(frame_out, (x1,y1), (x2,y2), (0,255,0), 2)
+                            cv2.putText(frame_out, class_name, (x1,y1-10),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                                        (0,255,0), 2)
+
+                            # ================= AUTO REPORT =================
+                            image_path = f"live_{class_name}.jpg"
+                            cv2.imwrite(image_path, img)
+
+                            generate_report(class_name, location, image_path)
 
                     return frame_out
 
@@ -201,16 +210,6 @@ def show_home():
 
         df = pd.DataFrame(data)
         st.bar_chart(df.set_index("Category"))
-
-        status = {
-            "Status": ["Resolved", "Pending", "In Progress"],
-            "Count": [980, 260, 120]
-        }
-
-        df2 = pd.DataFrame(status)
-        st.bar_chart(df2.set_index("Status"))
-
-        st.success("Live analytics system (demo data)")
 
     # ================= SETTINGS =================
     elif menu == "⚙️ Settings":
