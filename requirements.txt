@@ -13,3 +13,7 @@ streamlit-webrtc
 av
 reportlab
 pyrebase4
+requests
+urllib3
+gcloud
+oauth2client
