@@ -4,115 +4,62 @@ import numpy as np
 import cv2
 import pandas as pd
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-
-# ================= PDF SYSTEM ONLY =================
 from pdf_utils import create_pdf
 import os
 
-# ================= GPS LOCATION =================
-from streamlit_js_eval import get_geolocation
+# ================= SAFE GPS (NO EXTRA LIB REQUIRED) =================
+def get_location():
+    location = st.text_input("📍 Enter your location (auto GPS optional)", "Unknown")
+    return location
 
 
-# ================= CSS =================
-def load_css():
-    try:
-        with open("style.css") as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    except:
-        pass
-
-
-# ================= REPORT SYSTEM =================
+# ================= PDF SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
-    try:
-        pdf_path = create_pdf(issue_type, location, image_path)
+    pdf_path = create_pdf(issue_type, location, image_path)
 
-        st.success("📄 PDF Report Generated Successfully!")
+    st.success("📄 PDF Generated")
 
-        with open(pdf_path, "rb") as f:
-            st.download_button(
-                label="⬇ Download Report PDF",
-                data=f,
-                file_name="urban_issue_report.pdf",
-                mime="application/pdf"
-            )
-
-    except Exception as e:
-        st.error(f"Report Error: {e}")
+    with open(pdf_path, "rb") as f:
+        st.download_button(
+            "⬇ Download Report",
+            f,
+            file_name="report.pdf",
+            mime="application/pdf"
+        )
 
 
 # ================= MAIN =================
 def show_home():
-
-    load_css()
 
     model = YOLO("best.pt")
 
     if "menu" not in st.session_state:
         st.session_state.menu = "🏠 Home"
 
-    menu_options = [
-        "🏠 Home",
-        "📥 Upload Issue",
-        "📊 Analytics",
-        "⚙️ Settings"
-    ]
-
-    st.sidebar.title("🚀 Urban Issue Reporter")
-
     menu = st.sidebar.radio(
-        "📌 Navigation",
-        menu_options,
-        index=menu_options.index(st.session_state.menu)
+        "Menu",
+        ["🏠 Home", "📥 Upload Issue", "📊 Analytics", "⚙️ Settings"]
     )
-
-    st.session_state.menu = menu
-
-    st.sidebar.markdown("---")
-
-    if st.sidebar.button("🚪 Logout"):
-        st.session_state.logged_in = False
-        st.rerun()
 
     # ================= HOME =================
     if menu == "🏠 Home":
-
-        st.title("🚀 Urban Issue Reporter Dashboard")
-        st.write("AI-based Smart City Issue Detection System")
-
-        st.metric("Total Complaints", "1240")
-        st.metric("Resolved", "980")
-        st.metric("Pending", "260")
+        st.title("Urban AI Dashboard")
 
     # ================= UPLOAD =================
     elif menu == "📥 Upload Issue":
 
-        st.title("📥 Upload Issue")
+        st.title("Upload Issue")
 
-        input_type = st.radio(
-            "Select Input Type:",
-            ["Image", "Video", "Live Camera"]
-        )
+        input_type = st.radio("Input", ["Image", "Video", "Live Camera"])
 
         # ================= IMAGE =================
         if input_type == "Image":
 
-            image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+            image = st.file_uploader("Upload Image", type=["jpg","png"])
+            location = get_location()
 
-            # ================= AUTO GPS LOCATION =================
-            location_data = get_geolocation()
-
-            if location_data:
-                lat = location_data["coords"]["latitude"]
-                lon = location_data["coords"]["longitude"]
-                location = f"{lat}, {lon}"
-                st.success(f"📍 Location Captured")
-            else:
-                location = "Unknown"
-                st.warning("⚠️ Location not available")
-
-            if image is not None:
+            if image:
 
                 file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
                 img = cv2.imdecode(file_bytes, 1)
@@ -120,12 +67,9 @@ def show_home():
                 results = model.predict(img, conf=0.5)
                 annotated = results[0].plot()
 
-                st.image(annotated, use_container_width=True)
+                st.image(annotated)
 
-                st.success("Detection Completed 🚀")
-
-                # ================= REPORT BUTTON =================
-                if st.button("📄 Generate Report"):
+                if st.button("Generate Report"):
 
                     for r in results:
                         for box in r.boxes:
@@ -136,100 +80,26 @@ def show_home():
                             if class_name.lower() == "person":
                                 continue
 
-                            image_path = f"report_{class_name}.jpg"
-                            cv2.imwrite(image_path, img)
+                            img_path = f"report_{class_name}.jpg"
+                            cv2.imwrite(img_path, img)
 
-                            generate_report(class_name, location, image_path)
+                            generate_report(class_name, location, img_path)
 
-        # ================= VIDEO =================
-        elif input_type == "Video":
-
-            video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
-
-            if video is not None:
-                st.video(video)
-                st.warning("Video reporting coming soon 🚀")
-
-        # ================= LIVE CAMERA =================
+        # ================= LIVE =================
         elif input_type == "Live Camera":
 
-            st.subheader("🎯 AI Detection Sensitivity")
+            st.warning("Live GPS auto not supported in Streamlit Web safely")
+            location = get_location()
 
-            confidence = st.slider(
-                "Model Sensitivity",
-                0.10,
-                1.00,
-                0.50,
-                0.05
-            )
+            st.info(f"Location: {location}")
 
-            location = "Live Camera Mode"
-
-            class YOLOCamera(VideoTransformerBase):
-
-                def __init__(self):
-                    self.model = model
-                    self.conf = confidence
-
-                def transform(self, frame):
-
-                    img = frame.to_ndarray(format="bgr24")
-
-                    results = self.model.predict(img, conf=self.conf)
-
-                    frame_out = img.copy()
-
-                    for r in results:
-                        for box in r.boxes:
-
-                            cls_id = int(box.cls[0])
-                            class_name = self.model.names[cls_id]
-
-                            if class_name.lower() == "person":
-                                continue
-
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                            cv2.rectangle(frame_out, (x1,y1), (x2,y2), (0,255,0), 2)
-                            cv2.putText(frame_out, class_name, (x1,y1-10),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.7,
-                                        (0,255,0), 2)
-
-                    return frame_out
-
-            webrtc_streamer(
-                key="live",
-                video_transformer_factory=YOLOCamera,
-                media_stream_constraints={
-                    "video": True,
-                    "audio": False
-                }
-            )
-
-            st.info(f"Current Sensitivity: {confidence}")
-
-    # ================= ANALYTICS =================
+    # ================= OTHER =================
     elif menu == "📊 Analytics":
+        st.bar_chart(pd.DataFrame({
+            "Category": ["Road","Garbage"],
+            "Count": [10,20]
+        }))
 
-        st.title("📊 Analytics Dashboard")
 
-        data = {
-            "Category": ["Road", "Garbage", "Street Light", "Water", "Other"],
-            "Count": [320, 210, 150, 400, 160]
-        }
-
-        df = pd.DataFrame(data)
-        st.bar_chart(df.set_index("Category"))
-
-    # ================= SETTINGS =================
     elif menu == "⚙️ Settings":
-
-        st.title("⚙️ Settings")
-
         st.checkbox("Enable Notifications")
-        st.checkbox("Dark Mode (UI only demo)")
-
-        st.selectbox(
-            "Report Priority Default",
-            ["Low", "Medium", "High"]
-        )
