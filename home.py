@@ -22,90 +22,60 @@ model = YOLO("best.pt")
 
 # ================= PREMIUM CSS (UPGRADED UI ONLY) =================
 def load_css():
-    st.markdown("""
-    <style>
+    /* ================= SURVEILLANCE PREMIUM UI ================= */
 
-    /* GLOBAL */
-    body {
-        background: radial-gradient(circle at top, #0b1220, #050814);
-    }
+.surv-title {
+    font-size:34px;
+    font-weight:900;
+    color:#00e5ff;
+    text-align:center;
+    text-shadow:0px 0px 15px rgba(0,229,255,0.5);
+    margin-bottom:10px;
+}
 
-    /* TITLE */
-    .gov-title {
-        font-size:52px;
-        font-weight:900;
-        text-align:center;
-        color:#00e5ff;
-        letter-spacing:3px;
-        text-shadow:0px 0px 20px rgba(0,229,255,0.6);
-        margin-bottom:5px;
-    }
+.mode-box {
+    background: rgba(15, 23, 42, 0.8);
+    border:1px solid rgba(0,229,255,0.2);
+    padding:12px;
+    border-radius:12px;
+    box-shadow:0px 0px 20px rgba(0,229,255,0.08);
+}
 
-    .gov-subtitle {
-        text-align:center;
-        color:#a9c4d8;
-        margin-bottom:30px;
-        font-size:17px;
-    }
+.detect-box {
+    background: linear-gradient(135deg,#0f172a,#111c33);
+    border-left:4px solid #00ffcc;
+    padding:12px;
+    border-radius:10px;
+    margin:6px 0px;
+    color:white;
+    transition:0.3s;
+}
 
-    /* GLASS CARD */
-    .gov-card {
-        background: rgba(15, 23, 42, 0.75);
-        backdrop-filter: blur(12px);
-        padding:24px;
-        border-radius:18px;
-        box-shadow:0px 0px 25px rgba(0,229,255,0.10);
-        color:white;
-        text-align:center;
-        border:1px solid rgba(0,229,255,0.2);
-        transition:0.3s ease-in-out;
-    }
+.detect-box:hover {
+    transform:scale(1.02);
+    box-shadow:0px 0px 15px rgba(0,255,204,0.2);
+}
 
-    .gov-card:hover {
-        transform: scale(1.05);
-        box-shadow:0px 0px 35px rgba(0,229,255,0.35);
-    }
+.video-frame {
+    border-radius:15px;
+    border:2px solid rgba(0,229,255,0.4);
+    box-shadow:0px 0px 25px rgba(0,229,255,0.15);
+}
 
-    /* METRICS */
-    .metric-big {
-        font-size:34px;
-        font-weight:900;
-        color:#00ffcc;
-        text-shadow:0px 0px 10px rgba(0,255,204,0.4);
-    }
+.live-status {
+    background: #1b1f36;
+    border-left:5px solid red;
+    padding:10px;
+    border-radius:10px;
+    color:white;
+    animation: pulse 1.5s infinite;
+}
 
-    /* ALERT BOX */
-    .alert-box {
-        background: linear-gradient(90deg, #0f172a, #111c33);
-        border-left:5px solid #00e5ff;
-        padding:14px;
-        border-radius:12px;
-        color:white;
-        box-shadow:0px 0px 20px rgba(0,229,255,0.15);
-    }
-
-    /* BUTTONS */
-    .stButton button {
-        background: linear-gradient(90deg, #00e5ff, #00ffcc);
-        color:black;
-        font-weight:bold;
-        border-radius:10px;
-        border:none;
-    }
-
-    .stButton button:hover {
-        transform: scale(1.05);
-        box-shadow:0px 0px 15px rgba(0,255,204,0.5);
-    }
-
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0b1220, #050814);
-    }
-
-    </style>
-    """, unsafe_allow_html=True)
-
+@keyframes pulse {
+    0% { box-shadow:0px 0px 5px red; }
+    50% { box-shadow:0px 0px 20px red; }
+    100% { box-shadow:0px 0px 5px red; }
+}
 
 # ================= REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
@@ -162,9 +132,17 @@ def dashboard():
 # ================= DETECTION =================
 def upload_section():
 
-    st.title("📡 AI Surveillance & Detection Grid")
+   def upload_section():
 
-    mode = st.radio("Select Mode", ["Image", "Video", "Live Camera"])
+    st.markdown('<div class="surv-title">📡 AI SURVEILLANCE COMMAND CENTER</div>', unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="live-status">
+    🔴 REAL-TIME MONITORING ACTIVE | YOLO AI ENGINE RUNNING | GOVERNMENT NODE CONNECTED
+    </div>
+    """, unsafe_allow_html=True)
+
+    mode = st.radio("Select Surveillance Mode", ["Image", "Video", "Live Camera"])
 
     # ================= IMAGE =================
     if mode == "Image":
@@ -195,13 +173,120 @@ def upload_section():
             detected = list(set(detected))
 
             st.success("Detection Completed ✔")
-            st.write(detected)
+
+            st.markdown("### 🚨 DETECTED VIOLATIONS")
+
+            for d in detected:
+                st.markdown(f"""
+                <div class="detect-box">🔴 {d}</div>
+                """, unsafe_allow_html=True)
 
             if st.button("📄 Generate Government Report"):
                 img_path = f"gov_report_{datetime.now().timestamp()}.jpg"
                 cv2.imwrite(img_path, img)
 
                 for issue in detected:
+                    generate_report(issue, location, img_path)
+
+    # ================= VIDEO =================
+    elif mode == "Video":
+
+        st.markdown('<div class="mode-box">📹 VIDEO INTELLIGENCE MODE ACTIVE</div>', unsafe_allow_html=True)
+
+        video_file = st.file_uploader("Upload Video", type=["mp4","avi","mov"])
+
+        if video_file:
+
+            temp_path = "temp_video.mp4"
+            with open(temp_path, "wb") as f:
+                f.write(video_file.read())
+
+            cap = cv2.VideoCapture(temp_path)
+
+            detected_all = []
+            stframe = st.empty()
+
+            while cap.isOpened():
+
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                results = model.predict(frame, conf=0.5)
+                annotated = results[0].plot()
+
+                stframe.image(annotated, channels="BGR", use_container_width=True)
+
+                for r in results:
+                    for box in r.boxes:
+                        cls = int(box.cls[0])
+                        name = model.names[cls]
+                        if name.lower() != "person":
+                            detected_all.append(name)
+
+            cap.release()
+
+            detected_all = list(set(detected_all))
+
+            st.success(f"ANALYSIS COMPLETE ✔")
+
+            for d in detected_all:
+                st.markdown(f"<div class='detect-box'>⚠ {d}</div>", unsafe_allow_html=True)
+
+    # ================= LIVE CAMERA =================
+    elif mode == "Live Camera":
+
+        st.markdown('<div class="live-status">🔴 LIVE FEED ACTIVE - HIGH SECURITY MODE</div>', unsafe_allow_html=True)
+
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
+
+        if "last_frame" not in st.session_state:
+            st.session_state.last_frame = None
+        if "last_detected" not in st.session_state:
+            st.session_state.last_detected = []
+
+        class GovCamera(VideoTransformerBase):
+
+            def transform(self, frame):
+
+                img = frame.to_ndarray(format="bgr24")
+
+                results = model.predict(img, conf=0.5)
+
+                detected = []
+
+                for r in results:
+                    for box in r.boxes:
+
+                        cls = int(box.cls[0])
+                        name = model.names[cls]
+
+                        if name.lower() != "person":
+                            detected.append(name)
+
+                        x1, y1, x2, y2 = map(int, box.xyxy[0])
+                        cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,255), 2)
+
+                if detected:
+                    st.session_state.last_frame = img.copy()
+                    st.session_state.last_detected = list(set(detected))
+
+                return img
+
+        webrtc_streamer(
+            key="gov-live",
+            video_transformer_factory=GovCamera,
+            media_stream_constraints={"video": True, "audio": False}
+        )
+
+        if st.button("📸 CAPTURE & GENERATE REPORT"):
+
+            if st.session_state.last_frame is not None:
+
+                img_path = f"live_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(img_path, st.session_state.last_frame)
+
+                for issue in st.session_state.last_detected:
                     generate_report(issue, location, img_path)
 
     # ================= VIDEO =================
