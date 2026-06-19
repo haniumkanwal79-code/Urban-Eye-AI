@@ -35,7 +35,86 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 
-# ================= 🚨 REPORT SYSTEM (PDF ONLY) =================
+# ================= PREMIUM UI STYLE =================
+st.markdown("""
+<style>
+
+/* BACKGROUND */
+.stApp {
+    background: radial-gradient(circle at top, #0b1220, #050814);
+    color: white;
+}
+
+/* TITLE */
+.main-title {
+    font-size:42px;
+    font-weight:900;
+    text-align:center;
+    color:#00e5ff;
+    text-shadow:0px 0px 20px rgba(0,229,255,0.6);
+    margin-top:20px;
+}
+
+.sub-title {
+    text-align:center;
+    color:#a9c4d8;
+    font-size:16px;
+    margin-bottom:30px;
+}
+
+/* LOGIN CARD */
+.login-box {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0px 0px 25px rgba(0,229,255,0.15);
+    max-width:420px;
+    margin:auto;
+    border:1px solid rgba(0,229,255,0.25);
+}
+
+/* INPUTS */
+input {
+    border-radius:10px !important;
+}
+
+/* BUTTON */
+.stButton button {
+    width:100%;
+    background: linear-gradient(90deg, #00e5ff, #00ffcc);
+    color:black;
+    font-weight:bold;
+    border-radius:10px;
+    border:none;
+    padding:10px;
+}
+
+.stButton button:hover {
+    transform: scale(1.03);
+    box-shadow:0px 0px 15px rgba(0,255,204,0.5);
+}
+
+/* RADIO */
+.stRadio > div {
+    background: rgba(255,255,255,0.05);
+    padding:10px;
+    border-radius:10px;
+}
+
+/* FOOTER TEXT */
+.footer {
+    text-align:center;
+    color:gray;
+    font-size:12px;
+    margin-top:20px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# ================= REPORT SYSTEM (PDF ONLY) =================
 def generate_report(issue_type, location, image_path):
 
     try:
@@ -43,7 +122,6 @@ def generate_report(issue_type, location, image_path):
 
         st.success("📄 PDF Report Generated Successfully!")
 
-        # show download button
         with open(pdf_path, "rb") as f:
             st.download_button(
                 label="⬇ Download Report PDF",
@@ -56,16 +134,15 @@ def generate_report(issue_type, location, image_path):
         st.error(f"Report Error: {e}")
 
 
-# ================= 🔐 SIGNUP =================
+# ================= SIGNUP =================
 def firebase_signup():
 
-    st.subheader("🆕 Create New Account")
+    st.markdown("### 🆕 Create Account")
 
-    email = st.text_input("Signup Email")
-    password = st.text_input("Signup Password", type="password")
+    email = st.text_input("Email Address")
+    password = st.text_input("Password", type="password")
 
-    if st.button("Create Account"):
-
+    if st.button("Create Account 🚀"):
         try:
             auth.create_user_with_email_and_password(email, password)
             st.success("Account Created Successfully 🚀 Now Login")
@@ -74,23 +151,22 @@ def firebase_signup():
             st.error(f"Signup Failed ❌ {e}")
 
 
-# ================= 🔐 LOGIN =================
+# ================= LOGIN =================
 def firebase_login():
 
-    st.subheader("🔐 Login")
+    st.markdown("### 🔐 Secure Login Portal")
 
-    email = st.text_input("Login Email")
-    password = st.text_input("Login Password", type="password")
+    email = st.text_input("Email Address")
+    password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
-
+    if st.button("Login 🚀"):
         try:
             user = auth.sign_in_with_email_and_password(email, password)
 
             st.session_state.logged_in = True
             st.session_state.user = email
 
-            st.success("Login Successful 🚀")
+            st.success("Login Successful 🚀 Redirecting...")
             st.rerun()
 
         except Exception as e:
@@ -100,13 +176,21 @@ def firebase_login():
 # ================= ROUTING =================
 if not st.session_state.logged_in:
 
-    menu = st.radio("Choose Action", ["Login", "Sign Up"])
+    st.markdown("<div class='main-title'>🏛 Urban AI Intelligence System</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-title'>Secure Government Surveillance Platform</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+
+    menu = st.radio("Select Action", ["Login", "Sign Up"])
 
     if menu == "Login":
         firebase_login()
-
     else:
         firebase_signup()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='footer'>🔐 Powered by Firebase Authentication | Secure Access System</div>", unsafe_allow_html=True)
 
     st.stop()
 
