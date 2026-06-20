@@ -4,6 +4,8 @@ import os
 
 # ================= REPORT SYSTEM (ONLY PDF) =================
 from pdf_utils import create_pdf
+# 1. Email bhejane ke liye utility file ko import kiya
+import email_utils 
 
 # ================= FIREBASE AUTH =================
 import pyrebase
@@ -141,6 +143,19 @@ def generate_report(issue_type, location, image_path):
                 file_name="urban_issue_report.pdf",
                 mime="application/pdf"
             )
+
+        # --- AUTOMATIC EMAIL SYSTEM INTEGRATION ---
+        # 2. Yahan check kiya ja raha hai ke user logged in hai ya nahi
+        if st.session_state.user:
+            with st.spinner("📧 Sending PDF Report to your email..."):
+                # email_utils ke andar maujuda function ko call kiya
+                email_success = email_utils.send_report_email(st.session_state.user, pdf_path)
+                if email_success:
+                    st.info(f"🚀 Report sent automatically to: {st.session_state.user}")
+                else:
+                    st.warning("⚠️ Report generated but automated email delivery failed.")
+        else:
+            st.warning("⚠️ Email could not be sent because user session is missing.")
 
     except Exception as e:
         st.error(f"Report Error: {e}")
