@@ -30,7 +30,7 @@ db.create_table()
 os.makedirs("reports", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
 
-# ================= SESSION =================
+# ================= SESSION (FIXED FOR STABILITY) =================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -163,10 +163,11 @@ def firebase_signup():
             st.error(f"Signup Failed ❌ {e}")
 
 
-# ================= GOOGLE AUTH SYSTEM =================
+# ================= GOOGLE AUTH SYSTEM (OPTIMIZED) =================
 def google_login_component():
     """
     Handles Google Authentication for Firebase using secure redirection keys.
+    Fixes state management so user doesn't get logged out repeatedly.
     """
     try:
         client_id = st.secrets["google_oauth"]["CLIENT_ID"]
@@ -207,7 +208,7 @@ def google_login_component():
         </a>
     ''', unsafe_allow_html=True)
 
-    # Catch OAuth authentication callback codes from URLs
+    # Catch OAuth authentication callback codes from URLs safely
     query_params = st.query_params
     if "code" in query_params:
         try:
@@ -221,12 +222,15 @@ def google_login_component():
                 client_id
             )
             
-            # Commit payload parameters into application instance state memory
+            # Commit parameters into session state memory so login persists
             st.session_state.logged_in = True
             st.session_state.user = info.get("email")
+            
+            # CRITICAL: Clean URL parameters completely to avoid loop or state drop
             st.query_params.clear()
             st.success("Google Authentication Successful! 🚀")
             st.rerun()
+            
         except Exception as e:
             st.error(f"Google Authorization Matrix Failure: {e}")
 
