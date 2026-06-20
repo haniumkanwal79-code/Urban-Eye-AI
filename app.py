@@ -7,6 +7,9 @@ from pdf_utils import create_pdf
 
 # ================= FIREBASE AUTH =================
 import pyrebase
+# Google ID token verify karne ke liye secondary processing libraries
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 firebaseConfig = {
     "apiKey": "AIzaSyBg4jTdlcrqKwNa0115fJN6rQsUtorZp58",
@@ -110,6 +113,15 @@ input {
     margin-top:20px;
 }
 
+/* GOOGLE BUTTON SEPARATOR */
+.or-separator {
+    text-align: center;
+    margin: 15px 0;
+    color: #a9c4d8;
+    font-size: 14px;
+    position: relative;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -139,8 +151,8 @@ def firebase_signup():
 
     st.markdown("### 🆕 Create Account")
 
-    email = st.text_input("Email Address")
-    password = st.text_input("Password", type="password")
+    email = st.text_input("Email Address", key="signup_email")
+    password = st.text_input("Password", type="password", key="signup_pass")
 
     if st.button("Create Account 🚀"):
         try:
@@ -151,13 +163,81 @@ def firebase_signup():
             st.error(f"Signup Failed ❌ {e}")
 
 
+# ================= GOOGLE AUTH SYSTEM =================
+def google_login_component():
+    """
+    Handles Google Authentication for Firebase using secure redirection keys.
+    """
+    try:
+        client_id = st.secrets["google_oauth"]["CLIENT_ID"]
+        client_secret = st.secrets["google_oauth"]["CLIENT_SECRET"]
+        redirect_uri = st.secrets["google_oauth"]["REDIRECT_URI"]
+    except Exception:
+        st.warning("⚠️ Google Sign-In setup pending in Streamlit secrets.toml")
+        return
+
+    st.markdown('<div class="or-separator">─ OR ─</div>', unsafe_allow_html=True)
+
+    # Google Client Configuration payload
+    from google_auth_oauthlib.flow import Flow
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
+        redirect_uri=redirect_uri
+    )
+
+    auth_url, _ = flow.authorization_url(prompt='select_account')
+
+    # Render a fully styled premium standard Google Sign-In button
+    st.markdown(f'''
+        <a href="{auth_url}" target="_self" style="text-decoration: none;">
+            <button style="background-color: #ffffff; color: #2d3748; font-weight: bold; border: 1px solid #dadce0; padding: 10px 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; transition: 0.2s;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" style="width: 18px; margin-right: 12px;"/>
+                Continue with Google
+            </button>
+        </a>
+    ''', unsafe_allow_html=True)
+
+    # Catch OAuth authentication callback codes from URLs
+    query_params = st.query_params
+    if "code" in query_params:
+        try:
+            flow.fetch_token(code=query_params["code"])
+            credentials = flow.credentials
+            
+            # Verify and decode Google OpenID encryption tokens
+            info = id_token.verify_oauth2_token(
+                credentials.id_token,
+                google_requests.Request(),
+                client_id
+            )
+            
+            # Commit payload parameters into application instance state memory
+            st.session_state.logged_in = True
+            st.session_state.user = info.get("email")
+            st.query_params.clear()
+            st.success("Google Authentication Successful! 🚀")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Google Authorization Matrix Failure: {e}")
+
+
 # ================= LOGIN =================
 def firebase_login():
 
     st.markdown("### 🔐 Secure Login Portal")
 
-    email = st.text_input("Email Address")
-    password = st.text_input("Password", type="password")
+    email = st.text_input("Email Address", key="login_email")
+    password = st.text_input("Password", type="password", key="login_pass")
 
     if st.button("Login 🚀"):
         try:
@@ -171,6 +251,9 @@ def firebase_login():
 
         except Exception as e:
             st.error(f"Login Failed ❌ {e}")
+            
+    # ---- INTEGRATED GOOGLE AUTH FLOW TRIGGER ----
+    google_login_component()
 
 
 # ================= ROUTING =================
