@@ -9,6 +9,13 @@ import os
 import time
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
+# Email sending ke liye zaroori libraries
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+
 # ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="🏛 National Urban Intelligence System",
@@ -17,7 +24,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-model = YOLO("best.pt")
+# Cache model to avoid reloading on every rerun
+@st.cache_resource
+def load_yolo_model():
+    return YOLO("best.pt")
+
+model = load_yolo_model()
 
 
 # ================= PREMIUM CSS (UPGRADED UI ONLY) =================
@@ -107,6 +119,69 @@ def load_css():
     """, unsafe_allow_html=True)
 
 
+# ================= EMAIL SYSTEM =================
+def send_report_email(department_email, issue_type, location, timestamp, pdf_path):
+    """
+    Sends an email with the generated PDF report attached to the specific department.
+    Uses Streamlit secrets for credentials.
+    """
+    try:
+        # Streamlit secrets se settings fetch karein
+        sender_email = st.secrets["email"]["SENDER_EMAIL"]
+        sender_password = st.secrets["email"]["APP_PASSWORD"]
+    except Exception:
+        st.error("🔑 Email credentials missing in Streamlit Secrets!")
+        return False
+
+    # Email setting up
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = department_email
+    msg['Subject'] = f"[URGENT ALERT] {issue_type.upper()} Detected at {location}"
+
+    body = f"""Dear Department Team,
+
+An urban issue has been automatically detected and flagged by the National Urban Intelligence System.
+
+----------------------------------------------
+INCIDENT LOG DETAILS
+----------------------------------------------
+Issue Detected : {issue_type}
+Location Zone  : {location}
+Timestamp      : {timestamp}
+----------------------------------------------
+
+The official government compliance report has been generated and is attached to this email. Please take immediate action.
+
+This is an automated system generation alert. Please do not reply to this address.
+"""
+    msg.attach(MIMEText(body, 'plain'))
+
+    # PDF Attachment parsing
+    if os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename={os.path.basename(pdf_path)}",
+            )
+            msg.attach(part)
+
+    try:
+        # SMTP Server initialization (Gmail Example)
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, department_email, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"Failed to transmit automated email notification: {str(e)}")
+        return False
+
+
 # ================= REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
 
@@ -120,6 +195,26 @@ def generate_report(issue_type, location, image_path):
     )
 
     st.success("🏛 Official Government Report Generated")
+
+    # ---- NEW INTEGRATED EMAIL ROUTING LAYER ----
+    # Mapping issues to specific department emails
+    department_directory = {
+        "road": "road.maintenance@government.gov",
+        "garbage": "waste.management@government.gov",
+        "water": "water.sanitation@government.gov",
+        "electricity": "power.grid@government.gov"
+    }
+    
+    # Sahi department email fetch karna default key ke sath
+    matched_issue = issue_type.lower().strip()
+    target_email = department_directory.get(matched_issue, "central.command@government.gov")
+    
+    st.info(f"📬 Dispatching report to department endpoint: {target_email}...")
+    email_status = send_report_email(target_email, issue_type, location, timestamp, pdf_path)
+    
+    if email_status:
+        st.success(f"🚀 Report successfully routed and emailed to the department! ✅")
+    # --------------------------------------------
 
     with open(pdf_path, "rb") as f:
         st.download_button(
@@ -303,7 +398,6 @@ def upload_section():
 
 
 # ================= ANALYTICS =================
-# ================= ANALYTICS (MAX PREMIUM UPGRADE) =================
 def analytics():
 
     st.markdown("""
@@ -450,3 +544,6 @@ def show_home():
         analytics()
     elif menu == "⚙️ Settings":
         settings()
+
+if __name__ == "__main__":
+    show_home()
