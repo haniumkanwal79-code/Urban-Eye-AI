@@ -11,7 +11,6 @@ import time
 # =====================================================================
 # 1. INITIALIZATION & CONNECTIONS
 # =====================================================================
-# Page config must be the very first Streamlit command executed
 if "page_configured" not in st.session_state:
     st.set_page_config(
         page_title="Urban Eye AI - Portal",
@@ -40,7 +39,7 @@ try:
     from home import show_home
     show_home_function = show_home
 except ImportError:
-    pass  # Fallback smoothly if home.py is missing
+    pass
 
 # =====================================================================
 # 2. EMAIL TRANSMISSION LOGIC
@@ -79,15 +78,13 @@ def send_report_email(to_email, subject, body, attachment_path=None):
 # 3. HIGH-END DESIGN & SIMPLE ENGLISH UI
 # =====================================================================
 def show_auth_page():
-    # Premium CSS overrides for a beautiful tech UI layout
+    # Premium CSS overrides safely wrapped
     st.markdown("""
         <style>
         .block-container {
             padding-top: 2.5rem !important;
             max-width: 560px !important;
         }
-        
-        /* Sleek Premium Brand Top Card */
         .premium-brand-card {
             background: linear-gradient(135deg, #090d16 0%, #111827 100%);
             border: 1px solid rgba(0, 229, 255, 0.2);
@@ -98,7 +95,6 @@ def show_auth_page():
             margin-bottom: 25px;
             text-align: center;
         }
-        
         h1.brand-header {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             font-weight: 800 !important;
@@ -106,7 +102,6 @@ def show_auth_page():
             color: #ffffff !important;
             margin: 0 !important;
         }
-        
         .system-tagline {
             font-size: 11px !important;
             font-weight: 700 !important;
@@ -115,8 +110,6 @@ def show_auth_page():
             margin-top: 6px;
             text-transform: uppercase;
         }
-
-        /* Clean Colored Notification Blocks */
         .panel-info-box {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -128,13 +121,10 @@ def show_auth_page():
             line-height: 1.6;
             margin-bottom: 25px;
         }
-        
         .panel-info-box strong {
             color: #ffffff;
             font-weight: 600;
         }
-
-        /* Minimalist Status Pills */
         .status-row {
             display: flex;
             justify-content: center;
@@ -157,8 +147,6 @@ def show_auth_page():
             border-color: rgba(0, 255, 204, 0.2);
             background: rgba(0, 255, 204, 0.02);
         }
-
-        /* Modern Tabs Headers */
         .stTabs [data-baseweb="tab-list"] {
             background-color: transparent !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -176,10 +164,161 @@ def show_auth_page():
             color: #00e5ff !important;
             border-bottom: 2px solid #00e5ff !important;
         }
-
-        /* Premium Input Fields Layout */
         div[data-testid="stWidgetLabel"] p {
             color: #e2e8f0 !important;
             font-weight: 600 !important;
             font-size: 13px !important;
-            letter-spacing: 0.5
+            letter-spacing: 0.5px;
+        }
+        .stTextInput input {
+            background-color: #090d16 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 10px !important;
+            padding: 12px !important;
+            color: #ffffff !important;
+            transition: all 0.2s ease;
+        }
+        .stTextInput input:focus {
+            border-color: #00e5ff !important;
+            box-shadow: 0 0 0 1px #00e5ff !important;
+        }
+        .stButton button {
+            background: linear-gradient(93deg, #00e5ff 0%, #00b4d8 100%) !important;
+            color: #090d16 !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            letter-spacing: 1.5px !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 14px !important;
+            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.15) !important;
+            transition: all 0.3s ease;
+        }
+        .stButton button:hover {
+            background: linear-gradient(93deg, #00ffcc 0%, #00e5ff 100%) !important;
+            box-shadow: 0 4px 25px rgba(0, 255, 204, 0.3) !important;
+            transform: translateY(-0.5px);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Main Top Brand Display
+    st.markdown("""
+        <div class="premium-brand-card">
+            <h1 class="brand-header">URBAN EYE AI</h1>
+            <div class="system-tagline">✦ CONTROL DASHBOARD PORTAL ✦</div>
+            <div class="status-row">
+                <span class="status-pill pill-highlight">● SYSTEM: ONLINE</span>
+                <span class="status-pill">SECURE CONNECTION</span>
+                <span class="status-pill">VERSION 2.4</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    keep_logged_in = st.checkbox("Keep me logged in on this device", value=True, key="remember_me")
+    st.write(" ")
+    
+    tab1, tab2 = st.tabs(["✦ SIGN IN", "✦ CREATE ACCOUNT"])
+
+    # Login Space
+    with tab1:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div class="panel-info-box">
+                <strong>WELCOME BACK:</strong><br>
+                Please enter your email and password below to log into your dashboard room securely.
+            </div>
+        """, unsafe_allow_html=True)
+        
+        email = st.text_input("Email Address", key="l_email", placeholder="username@domain.com")
+        password = st.text_input("Password", type="password", key="l_password", placeholder="••••••••••••")
+        st.write(" ")
+        
+        if st.button("LOG IN TO SYSTEM", use_container_width=True):
+            if not email or not password:
+                st.warning("Please fill in all security fields.")
+                return
+            if not supabase:
+                st.error("Database connection is currently offline.")
+                return
+            with st.spinner("Checking your account details..."):
+                try:
+                    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                    st.session_state.user = res.user
+                    
+                    if keep_logged_in:
+                        st.query_params["session_user"] = email
+                    else:
+                        st.query_params.clear()
+                    
+                    st.success("Login successful! Loading your dashboard...")
+                    time.sleep(0.5)
+                    st.rerun()
+                except Exception:
+                    st.error("Login failed. Please check your email or password.")
+
+    # Signup Space
+    with tab2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div class="panel-info-box" style="border-left-color: #ff007f;">
+                <strong style="color: #ff007f;">NEW REGISTRATION:</strong><br>
+                Create a new account here to gain access. All accounts require a secure login process.
+            </div>
+        """, unsafe_allow_html=True)
+        
+        s_email = st.text_input("Your Email Address", key="s_email", placeholder="newuser@domain.com")
+        s_password = st.text_input("Choose a Password", type="password", key="s_password", placeholder="Must be at least 6 characters")
+        st.write(" ")
+        
+        if st.button("REGISTER ACCOUNT", use_container_width=True):
+            if not s_email or not s_password:
+                st.warning("Please fulfill credentials setup specifications.")
+                return
+            if not supabase:
+                st.error("Database connection is currently offline.")
+                return
+            with st.spinner("Creating your profile setup..."):
+                try:
+                    supabase.auth.sign_up({"email": s_email, "password": s_password})
+                    st.info("💡 Registration successful! Please switch back to the SIGN IN tab to log in.")
+                except Exception as e:
+                    st.error(f"Could not create account. Error details: {e}")
+
+# =====================================================================
+# 4. MONITOR ENGINE ROUTER
+# =====================================================================
+def main():
+    try:
+        url_user = st.query_params.get("session_user", None)
+    except Exception:
+        url_user = None
+    
+    if url_user and st.session_state.user is None:
+        class DummyUser:
+            def __init__(self, email):
+                self.email = email
+        st.session_state.user = DummyUser(url_user)
+
+    if st.session_state.user is None:
+        show_auth_page()
+    else:
+        if show_home_function:
+            show_home_function()
+        else:
+            st.markdown(f"""
+                <div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center; margin-bottom: 20px;'>
+                    <h3 style='color: white; margin: 0;'>🔒 SECURE OPERATOR ACCESS ACTIVE</h3>
+                    <p style='color: #38bdf8; font-weight: 600; margin: 5px 0 0 0;'>Session: {st.session_state.user.email}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.warning("⚠️ 'home.py' module link missing from source path. Displaying recovery core space.")
+            
+            if st.button("Log Out From Terminal Room", use_container_width=True):
+                st.session_state.user = None
+                st.query_params.clear()
+                st.rerun()
+
+if __name__ == "__main__":
+    main()
