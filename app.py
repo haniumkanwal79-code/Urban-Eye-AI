@@ -7,12 +7,6 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 
-# 🟢 home.py se exact control center panel function ko import karna safely
-try:
-    from home import show_home
-except ImportError:
-    st.error("❌ 'home.py' file nahi mili! Kindly check karein ke dono files aik hi folder me hain.")
-
 # =====================================================================
 # 1. CONFIGURATION & CONNECTIONS
 # =====================================================================
@@ -27,6 +21,12 @@ supabase = st.session_state.supabase_client
 
 if "user" not in st.session_state:
     st.session_state.user = None
+
+# 🟢 home.py se exact control center panel function ko import karna safely
+try:
+    from home import show_home
+except ImportError:
+    st.error("❌ 'home.py' file nahi mili! Kindly check karein ke dono files aik hi folder me hain.")
 
 # =====================================================================
 # 2. EMAIL SENDING LOGIC (BACKEND REVENUE)
@@ -64,121 +64,137 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. ADVANCED FUTURISTIC UI STYLING (THE ULTIMATE OVERHAUL)
+# 3. HIGHLY COMPATIBLE PREMIUM CSS (FIXED DESIGN GRID)
 # =====================================================================
-def load_advanced_auth_css():
+def load_fixed_auth_css():
     st.markdown("""
     <style>
-    /* Full Page Cyber Background */
-    .stApp {
-        background: radial-gradient(circle at center, #0a1128 0%, #030712 100%) !important;
-    }
-    
-    /* Main Card Frame with Animation */
-    .auth-card {
-        background: rgba(10, 25, 47, 0.45);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(0, 229, 255, 0.25);
-        border-radius: 24px;
-        padding: 40px;
-        box-shadow: 0 0 50px rgba(0, 229, 255, 0.1), inset 0 0 20px rgba(0, 229, 255, 0.05);
-        text-align: center;
-        transition: all 0.5s ease;
-    }
-    .auth-card:hover {
-        border-color: rgba(0, 255, 204, 0.45);
-        box-shadow: 0 0 60px rgba(0, 255, 204, 0.15), inset 0 0 30px rgba(0, 255, 204, 0.05);
-    }
-    
-    /* Elegant Badge Above Title */
-    .system-badge {
-        display: inline-block;
-        padding: 6px 14px;
-        background: rgba(0, 229, 255, 0.1);
-        border: 1px solid rgba(0, 229, 255, 0.4);
-        border-radius: 50px;
-        color: #00e5ff;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 20px;
-    }
-    
-    /* Cyber Title & Neon Glow */
+    /* Main Portal Heading */
     .portal-main-title {
-        font-size: 45px;
+        font-size: 42px;
         font-weight: 900;
-        background: linear-gradient(135deg, #ffffff 30%, #00e5ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: 4px;
-        margin-bottom: 8px;
-        text-transform: uppercase;
+        color: #00e5ff;
+        text-align: center;
+        letter-spacing: 3px;
+        margin-bottom: 5px;
+        text-shadow: 0px 0px 15px rgba(0, 229, 255, 0.4);
     }
     
     .portal-sub-text {
         color: #8892b0;
+        text-align: center;
         font-size: 15px;
         letter-spacing: 0.5px;
-        margin-bottom: 10px;
+        margin-bottom: 25px;
     }
 
-    /* Style Streamlit Input Labels to Match Cyber Theme */
+    /* Input Field Labels Alignment */
     div[data-testid="stWidgetLabel"] p {
-        color: #00e5ff !important;
+        color: #00ffcc !important;
         font-weight: 600 !important;
-        letter-spacing: 0.5px;
+        font-size: 14px !important;
     }
 
-    /* Customizing Streamlit Tabs Header */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: rgba(255, 255, 255, 0.02) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        padding: 6px !important;
-        border-radius: 14px !important;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        padding: 10px 24px !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.5px !important;
-        border-radius: 10px !important;
-        color: #8892b0 !important;
-        border: none !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(0, 255, 204, 0.1) 100%) !important;
-        border: 1px solid rgba(0, 229, 255, 0.5) !important;
-        color: #00e5ff !important;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
-    }
-
-    /* Ultimate Glowing Action Button */
+    /* Premium Action Button Customization */
     .stButton button {
         background: linear-gradient(90deg, #00e5ff 0%, #00ffcc 100%) !important;
-        color: #020c1b !important;
+        color: #050814 !important;
         font-weight: 800 !important;
         font-size: 15px !important;
-        letter-spacing: 2px !important;
-        border-radius: 14px !important;
+        letter-spacing: 1px !important;
+        border-radius: 12px !important;
         border: none !important;
-        padding: 14px 28px !important;
-        box-shadow: 0 4px 20px rgba(0, 229, 255, 0.25) !important;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        padding: 12px 24px !important;
+        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2) !important;
+        transition: 0.3s ease-in-out !important;
     }
     
     .stButton button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 30px rgba(0, 255, 204, 0.5) !important;
-    }
-    
-    /* Make checkboxes look integrated */
-    .stCheckbox {
-        color: #ccd6f6 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 25px rgba(0, 255, 204, 0.4) !important;
     }
     </style>
     """, unsafe_allow_html=True)
+
+# =====================================================================
+# 4. PAGES & UI (FRONTEND AUTHENTICATION)
+# =====================================================================
+
+def show_auth_page():
+    # Load safe CSS injection
+    load_fixed_auth_css()
+    
+    # Header Section
+    st.markdown('<div class="portal-main-title">🏛️ URBAN EYE AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="portal-sub-text">National Intelligence & Surveillance Access Network</div>', unsafe_allow_html=True)
+    
+    # Keep me logged in widget
+    keep_logged_in = st.checkbox("🔒 Keep command node session active", value=True, key="remember_me")
+    
+    st.markdown("---")
+    
+    tab1, tab2 = st.tabs(["🔑 SYSTEM LOGIN", "📝 REGISTER OFFICER"])
+
+    # Email/Password Login
+    with tab1:
+        st.markdown("<br>", unsafe_allow_html=True)
+        email = st.text_input("📡 Clearance Email Address", key="l_email", placeholder="officer@agency.gov")
+        password = st.text_input("🗝️ Access Token / Password", type="password", key="l_password", placeholder="••••••••")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("AUTHENTICATE & GRANT ENTRY", use_container_width=True):
+            try:
+                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                st.session_state.user = res.user
+                
+                if keep_logged_in:
+                    st.query_params["session_user"] = email
+                else:
+                    st.query_params.clear()
+                
+                st.success("✅ Signature verified. Access Granted.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Verification Failed: {e}")
+
+    # Email/Password Signup
+    with tab2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        s_email = st.text_input("📧 Terminal Request Email", key="s_email", placeholder="your-identity@domain.com")
+        s_password = st.text_input("信号 Master Password", type="password", key="s_password", placeholder="Minimum 6 characters")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("GENERATE INTEL ACCOUNT", use_container_width=True):
+            try:
+                supabase.auth.sign_up({"email": s_email, "password": s_password})
+                st.info("📨 Node creation code initialized! Switch to LOGIN tab to activate clearance.")
+            except Exception as e:
+                st.error(f"❌ Registration Blocked: {e}")
+
+# =====================================================================
+# 5. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
+# =====================================================================
+def main():
+    url_params = st.query_params.to_dict()
+    
+    # Background Auto-Login Layer
+    if "session_user" in url_params and st.session_state.user is None:
+        class DummyUser:
+            def __init__(self, email):
+                self.email = email
+        st.session_state.user = DummyUser(url_params["session_user"])
+
+    # Routing Logic
+    if st.session_state.user is None:
+        show_auth_page()
+    else:
+        # Main Dashboard running panel
+        show_home()
+        
+        # Logout catch engine
+        if st.session_state.user is None:
+            st.query_params.clear() 
+            st.rerun()
+
+if __name__ == "__main__":
+    main()
