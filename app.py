@@ -8,7 +8,7 @@ from email import encoders
 import os
 
 # =====================================================================
-# 1. INITIALIZATION & STABLE CONNECTIONS
+# 1. INITIALIZATION & CONNECTIONS
 # =====================================================================
 SUPABASE_URL = "https://mrwkglukekmikenihkfp.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yd2tnbHVrZWttaWtlbmloa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDQwODgsImV4cCI6MjA5NzcyMDA4OH0.Y1UpomD34O8shloIV6OGVFET5BFVfawLk2yDJZQy8yM"
@@ -17,7 +17,7 @@ if "supabase_client" not in st.session_state:
     try:
         st.session_state.supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
     except Exception as e:
-        st.error(f"System Matrix Connectivity Error: {e}")
+        st.error(f"Database Connection Error: {e}")
 
 supabase = st.session_state.get("supabase_client", None)
 
@@ -29,10 +29,10 @@ try:
     from home import show_home
     show_home_function = show_home
 except ImportError:
-    st.warning("⚠️ Core routing module 'home.py' offline. Running staging bypass container.")
+    st.warning("⚠️ 'home.py' file not found! Using standard dashboard screen.")
 
 # =====================================================================
-# 2. EMAIL AUTOMATION ENGINE
+# 2. EMAIL TRANSMISSION LOGIC
 # =====================================================================
 def send_report_email(to_email, subject, body, attachment_path=None):
     sender_email = "your_email@gmail.com" 
@@ -61,14 +61,14 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         server.quit()
         return True
     except Exception as e:
-        print(f"SMTP Transmission Fault: {e}")
+        print(f"SMTP Error: {e}")
         return False
 
 # =====================================================================
-# 3. BALANCED PREMIUM HIGH-TECH COLOR BLOCKS
+# 3. HIGH-END DESIGN & SIMPLE ENGLISH UI
 # =====================================================================
 def show_auth_page():
-    # Elite enterprise styling layout
+    # Premium CSS overrides for a beautiful tech UI layout
     st.markdown("""
         <style>
         .block-container {
@@ -76,7 +76,7 @@ def show_auth_page():
             max-width: 560px !important;
         }
         
-        /* Premium Minimal Executive Block */
+        /* Sleek Premium Brand Top Card */
         .premium-brand-card {
             background: linear-gradient(135deg, #090d16 0%, #111827 100%);
             border: 1px solid rgba(0, 229, 255, 0.2);
@@ -99,13 +99,13 @@ def show_auth_page():
         .system-tagline {
             font-size: 11px !important;
             font-weight: 700 !important;
-            letter-spacing: 2.5px !important;
+            letter-spacing: 2px !important;
             color: #00ffcc !important;
             margin-top: 6px;
             text-transform: uppercase;
         }
 
-        /* Sophisticated Executive Color Blocks */
+        /* Clean Colored Notification Blocks */
         .panel-info-box {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -123,7 +123,7 @@ def show_auth_page():
             font-weight: 600;
         }
 
-        /* Premium Minimalist Status Tags */
+        /* Minimalist Status Pills */
         .status-row {
             display: flex;
             justify-content: center;
@@ -147,7 +147,7 @@ def show_auth_page():
             background: rgba(0, 255, 204, 0.02);
         }
 
-        /* Modernized Tabs Headers */
+        /* Modern Tabs Headers */
         .stTabs [data-baseweb="tab-list"] {
             background-color: transparent !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -166,7 +166,7 @@ def show_auth_page():
             border-bottom: 2px solid #00e5ff !important;
         }
 
-        /* Executive Input Fields Styling */
+        /* Premium Input Fields Layout */
         div[data-testid="stWidgetLabel"] p {
             color: #e2e8f0 !important;
             font-weight: 600 !important;
@@ -186,7 +186,7 @@ def show_auth_page():
             box-shadow: 0 0 0 1px #00e5ff !important;
         }
         
-        /* Clean Premium Action Button */
+        /* Modern Gradient CTA Button */
         .stButton button {
             background: linear-gradient(93deg, #00e5ff 0%, #00b4d8 100%) !important;
             color: #090d16 !important;
@@ -207,110 +207,30 @@ def show_auth_page():
         </style>
     """, unsafe_allow_html=True)
 
-    # 1. Main Header Container (Corporate Cyber-Style)
+    # 1. Main Header Box (Top-Level Styling)
     st.markdown("""
         <div class="premium-brand-card">
             <h1 class="brand-header">URBAN EYE AI</h1>
-            <div class="system-tagline">✦ CORE SURVEILLANCE MATRIX ✦</div>
+            <div class="system-tagline">✦ CONTROL DASHBOARD PORTAL ✦</div>
             <div class="status-row">
                 <span class="status-pill pill-highlight">● SYSTEM: ONLINE</span>
-                <span class="status-pill">NODE: SECURE</span>
-                <span class="status-pill">PORTAL: v2.4</span>
+                <span class="status-pill">SECURE CONNECTION</span>
+                <span class="status-pill">VERSION 2.4</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Session Persistence Selection
-    keep_logged_in = st.checkbox("Maintain secure system authorization token on this workstation", value=True, key="remember_me")
+    # Remember login checkbox
+    keep_logged_in = st.checkbox("Keep me logged in on this device", value=True, key="remember_me")
     st.write(" ")
     
-    # 2. Main Tabbed Workspace
-    tab1, tab2 = st.tabs(["✦ SYSTEM SIGN-IN", "✦ ENROLL TERMINAL NODE"])
+    # 2. Workspace Navigation Tabs
+    tab1, tab2 = st.tabs(["✦ SIGN IN", "✦ CREATE ACCOUNT"])
 
-    # Authentication Tab
+    # Login Container
     with tab1:
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
             <div class="panel-info-box">
-                <strong>SECURE NODE ACCESS:</strong><br>
-                Please provide authorized routing logs to sync telemetry. Unauthorized intrusion attempts are recorded under terminal audit protocols.
-            </div>
-        """, unsafe_allow_html=True)
-        
-        email = st.text_input("Operator Identifier (Email Address)", key="l_email", placeholder="username@domain.com")
-        password = st.text_input("Cryptographic Access Key (Password)", type="password", key="l_password", placeholder="••••••••••••")
-        st.write(" ")
-        
-        if st.button("INITIALIZE SECURE SIGN-IN SEQUENCE", use_container_width=True):
-            if not supabase:
-                st.error("Centralized routing cluster communication fault.")
-                return
-            with st.spinner("Processing network decryption tokens..."):
-                try:
-                    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                    st.session_state.user = res.user
-                    
-                    if keep_logged_in:
-                        st.query_params["session_user"] = email
-                    else:
-                        st.query_params.clear()
-                    
-                    st.success("Credentials authenticated. Initializing interface frames...")
-                    st.rerun()
-                except Exception:
-                    st.error("Authentication rejected. Invalid credentials or network signature error.")
-
-    # Signup Tab
-    with tab2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-            <div class="panel-info-box" style="border-left-color: #ff007f;">
-                <strong style="color: #ff007f;">OPERATOR PROVISIONING:</strong><br>
-                Deploy structural parameters to request a primary node linkage. All profiles require automated cryptographic activation signatures.
-            </div>
-        """, unsafe_allow_html=True)
-        
-        s_email = st.text_input("Target Registration Domain", key="s_email", placeholder="new_node@domain.com")
-        s_password = st.text_input("Define Encryption Parameters", type="password", key="s_password", placeholder="Minimum of 6 alphanumeric characters")
-        st.write(" ")
-        
-        if st.button("PROVISION ARCHITECTURE PROFILE", use_container_width=True):
-            if not supabase:
-                st.error("Centralized routing cluster communication fault.")
-                return
-            with st.spinner("Injecting registration parameters into master cluster..."):
-                try:
-                    supabase.auth.sign_up({"email": s_email, "password": s_password})
-                    st.info("💡 Provisioning successful. Re-route via the SYSTEM SIGN-IN matrix component.")
-                except Exception as e:
-                    st.error(f"Allocation procedure terminated. Structural validation crash: {e}")
-
-# =====================================================================
-# 4. MONITOR ENGINE ROUTER
-# =====================================================================
-def main():
-    try:
-        url_params = st.query_params.to_dict()
-    except Exception:
-        url_params = {}
-    
-    if "session_user" in url_params and st.session_state.user is None:
-        class DummyUser:
-            def __init__(self, email):
-                self.email = email
-        st.session_state.user = DummyUser(url_params["session_user"])
-
-    if st.session_state.user is None:
-        show_auth_page()
-    else:
-        if show_home_function:
-            show_home_function()
-        else:
-            st.success(f"Session Token Validated: {st.session_state.user.email}")
-            if st.button("De-Authorize Endpoint"):
-                st.session_state.user = None
-                st.query_params.clear()
-                st.rerun()
-
-if __name__ == "__main__":
-    main()
+                <strong>WELCOME BACK:</strong><br>
+                Please enter your email and password below to log into your dashboard room
