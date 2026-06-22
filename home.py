@@ -17,12 +17,17 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 # ================= PAGE CONFIG =================
-st.set_page_config(
-    page_title="🏛 National Urban Intelligence System",
-    page_icon="🏛",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# NOTE: Page config ko function me wrap kiya hai taake app.py se conflict na ho
+def init_page_config():
+    try:
+        st.set_page_config(
+            page_title="🏛 National Urban Intelligence System",
+            page_icon="🏛",
+            layout="wide",
+            initial_sidebar_state="expanded"
+        )
+    except Exception:
+        pass
 
 # Cache model to avoid reloading on every rerun
 @st.cache_resource
@@ -523,7 +528,8 @@ def settings():
     st.selectbox("Priority Level", ["Low", "Medium", "High", "Critical"])
 
 
-# ================= MAIN =================
+# ================= MAIN RUN FUNCTION =================
+# 🟢 Yeh main function banaya gaya hai jise app.py call karega
 def show_home():
 
     load_css()
@@ -533,17 +539,8 @@ def show_home():
         ["🏛 Dashboard", "📡 Surveillance Grid", "📊 Analytics", "⚙️ Settings"]
     )
 
-    st.sidebar.success("SYSTEM ACTIVE")
-    st.sidebar.info("YOLOv8 AI Engine Running")
-
-    if menu == "🏛 Dashboard":
-        dashboard()
-    elif menu == "📡 Surveillance Grid":
-        upload_section()
-    elif menu == "📊 Analytics":
-        analytics()
-    elif menu == "⚙️ Settings":
-        settings()
-
-if __name__ == "__main__":
-    show_home()
+    # Sidebar Logout Option for Supabase
+    st.sidebar.markdown("---")
+    user_email = st.session_state.user.email if st.session_state.user else "Authorized User"
+    st.sidebar.caption(f"Logged in as: {user_email}")
+    if st.sidebar.button("Logout 🚪", use_container_width
