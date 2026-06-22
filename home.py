@@ -9,6 +9,10 @@ import os
 import time
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
+# Geospatial mapping extensions
+import folium
+from streamlit_folium import st_folium
+
 # Email libraries
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -41,10 +45,17 @@ except Exception:
 # ================= DYNAMIC DATABASE INITIALIZATION =================
 if "incident_db" not in st.session_state:
     st.session_state.incident_db = [
-        {"id": "UE-1024", "type": "Road", "location": "Metropolitan Highway", "timestamp": "2026-06-21 14:22:05", "status": "🟢 Resolved"},
-        {"id": "UE-1025", "type": "Garbage", "location": "Zone B Commercial", "timestamp": "2026-06-22 09:15:32", "status": "🔴 Pending"},
-        {"id": "UE-1026", "type": "Water", "location": "Outskirts Bypass", "timestamp": "2026-06-23 01:10:00", "status": "🔴 Pending"}
+        {"id": "UE-1024", "type": "Road", "location": "Metropolitan Highway", "timestamp": "2026-06-21 14:22:05", "severity": "🔴 Critical", "status": "🟢 Resolved", "lat": 24.8607, "lon": 67.0011},
+        {"id": "UE-1025", "type": "Garbage", "location": "Zone B Commercial", "timestamp": "2026-06-22 09:15:32", "severity": "🟡 Medium", "status": "🔴 Pending", "lat": 24.8922, "lon": 67.0746},
+        {"id": "UE-1026", "type": "Water", "location": "Outskirts Bypass", "timestamp": "2026-06-23 01:10:00", "severity": "🟢 Low", "status": "🔴 Pending", "lat": 24.9201, "lon": 67.1344}
     ]
+
+if "system_settings" not in st.session_state:
+    st.session_state.system_settings = {
+        "ai_alerts": True,
+        "logging": True,
+        "priority_level": "High"
+    }
 
 # ================= HIGH-END EXECUTIVE CSS =================
 def load_css():
@@ -224,7 +235,7 @@ This is an automated system generation alert. Please do not reply to this addres
 
 
 # ================= REPORT SYSTEM =================
-def generate_report(issue_type, location, image_path):
+def generate_report(issue_type, location, image_path, confidence=0.85):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     pdf_path = create_pdf(
         issue_type=issue_type,
@@ -234,13 +245,29 @@ def generate_report(issue_type, location, image_path):
     )
     st.success("🏛 Official Government Report Generated")
 
+    # FEATURE 3: AI Severity Estimator Logic based on classification bounds/confidence triggers
+    if confidence >= 0.80 or issue_type.lower() in ["road", "electricity"]:
+        severity = "🔴 Critical"
+    elif confidence >= 0.65:
+        severity = "🟡 Medium"
+    else:
+        severity = "🟢 Low"
+
+    # Simulated random location offset generators for realistic maps
+    base_lat, base_lon = 24.8607, 67.0011
+    rand_lat = base_lat + np.random.uniform(-0.08, 0.08)
+    rand_lon = base_lon + np.random.uniform(-0.08, 0.08)
+
     new_id = f"UE-{1000 + len(st.session_state.incident_db) + 1}"
     st.session_state.incident_db.append({
         "id": new_id,
         "type": issue_type,
         "location": location,
         "timestamp": timestamp,
-        "status": "🔴 Pending"
+        "severity": severity,
+        "status": "🔴 Pending",
+        "lat": rand_lat,
+        "lon": rand_lon
     })
 
     department_directory = {
@@ -263,7 +290,7 @@ def generate_report(issue_type, location, image_path):
         st.download_button(
             "⬇ Download Official Report (Gov Format)",
             f,
-            file_name="National_Urban_Report.pdf",
+            file_name=f"Urban_Report_{new_id}.pdf",
             mime="application/pdf"
         )
 
@@ -324,10 +351,13 @@ def upload_section():
                 st.image(annotated, caption="AI Detection Output", use_container_width=True)
 
                 detected = []
+                conf_score = 0.85
                 for r in results:
                     for box in r.boxes:
                         cls = int(box.cls[0])
                         name = model.names[cls]
+                        if len(box.conf) > 0:
+                            conf_score = float(box.conf[0])
                         if name.lower() != "person":
                             detected.append(name)
 
@@ -338,8 +368,10 @@ def upload_section():
                 if st.button("📄 Generate Government Report"):
                     img_path = f"gov_report_{datetime.now().timestamp()}.jpg"
                     cv2.imwrite(img_path, img)
+                    if len(detected) == 0:
+                        generate_report("General Issue", location, img_path, conf_score)
                     for issue in detected:
-                        generate_report(issue, location, img_path)
+                        generate_report(issue, location, img_path, conf_score)
             else:
                 st.error("AI Model File ('best.pt') missing or failed to initialize.")
 
@@ -416,8 +448,10 @@ def upload_section():
             if st.session_state.last_frame is not None:
                 img_path = f"live_{datetime.now().timestamp()}.jpg"
                 cv2.imwrite(img_path, st.session_state.last_frame)
+                if len(st.session_state.last_detected) == 0:
+                    generate_report("Camera Detection", location, img_path, 0.88)
                 for issue in st.session_state.last_detected:
-                    generate_report(issue, location, img_path)
+                    generate_report(issue, location, img_path, 0.88)
 
 
 # ================= ANALYTICS =================
@@ -485,22 +519,33 @@ def analytics():
         mime="text/csv"
     )
 
-# ================= TRACK SUBMISSIONS & ACTION CENTER =================
+
+# ================= TRACK SUBMISSIONS & GEOSPATIAL MAPS =================
 def track_submissions():
     st.title("📋 Live Incident Tracking Room")
-    st.markdown("""
-    <div class="panel-info-box">
-        <strong>LIVE TELEMETRY WORKSPACE:</strong><br>
-        Monitor active complaints filed into the server architecture. Toggle individual status states below.
-    </div>
-    """, unsafe_allow_html=True)
+    
+    # FEATURE 2: Interactive Folium Maps integration
+    st.subheader("📍 Geospatial Live Violation Telemetry Map")
+    
+    # Core Folium container init centered around coordinates
+    m = folium.Map(location=[24.8800, 67.0500], zoom_start=12, tiles="CartoDB dark_matter")
+    
+    for record in st.session_state.incident_db:
+        color = "red" if "Critical" in record["severity"] else "orange" if "Medium" in record["severity"] else "blue"
+        popup_info = f"ID: {record['id']} | Type: {record['type']} | Status: {record['status']}"
+        folium.Marker(
+            location=[record["lat"], record["lon"]],
+            popup=popup_info,
+            icon=folium.Icon(color=color, icon="info-sign")
+        ).add_to(m)
+        
+    st_folium(m, width="100%", height=400, returned_objects=[])
 
+    st.markdown("---")
     table_data = pd.DataFrame(st.session_state.incident_db)
     st.dataframe(table_data, use_container_width=True, hide_index=True)
     
-    st.markdown("---")
     st.subheader("🛠️ Admin Action Center Control")
-    
     col_sel, col_act = st.columns(2)
     with col_sel:
         target_id = st.selectbox("Select Incident ID to Update", [item["id"] for item in st.session_state.incident_db])
@@ -512,14 +557,26 @@ def track_submissions():
             if item["id"] == target_id:
                 item["status"] = new_status
         st.success(f"System Record updated successfully: {target_id} is now set to {new_status}!")
-        st.try_rerun() if hasattr(st, "try_rerun") else st.rerun()
+        time.sleep(1)
+        st.rerun()
+
 
 # ================= SETTINGS =================
 def settings():
     st.title("⚙️ Control Panel Settings")
-    st.checkbox("Enable AI Alerts", value=True)
-    st.checkbox("Enable Automated System Logging", value=True)
-    st.selectbox("System Priority Level", ["Low", "Medium", "High", "Critical"])
+    
+    # Buttons/Toggles working configuration state retention
+    ai_alerts = st.checkbox("Enable AI Alerts", value=st.session_state.system_settings["ai_alerts"])
+    logging = st.checkbox("Enable Automated System Logging", value=st.session_state.system_settings["logging"])
+    priority = st.selectbox("System Priority Level", ["Low", "Medium", "High", "Critical"], index=["Low", "Medium", "High", "Critical"].index(st.session_state.system_settings["priority_level"]))
+    
+    if st.button("Save Control Matrix Configurations", use_container_width=True):
+        st.session_state.system_settings["ai_alerts"] = ai_alerts
+        st.session_state.system_settings["logging"] = logging
+        st.session_state.system_settings["priority_level"] = priority
+        st.success("Configurations successfully pushed to production core!")
+        time.sleep(1)
+        st.rerun()
 
 
 # ================= MAIN RUN FUNCTION =================
@@ -535,7 +592,7 @@ def show_home():
     st.sidebar.caption(f"Logged in as: {user_email}")
     if st.sidebar.button("Logout 🚪", use_container_width=True):
         st.session_state.user = None
-        st.try_rerun() if hasattr(st, "try_rerun") else st.rerun()
+        st.rerun()
 
     st.sidebar.success("SYSTEM ACTIVE")
     st.sidebar.info("YOLOv8 AI Engine Running")
