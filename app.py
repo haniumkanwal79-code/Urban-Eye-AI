@@ -66,29 +66,32 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. NATIVE STREAMLIT DESIGN (COMPLETELY CRASH-PROOF)
+# 3. COLORFUL NATIVE STYLING (SAFE & LOOKS AMAZING)
 # =====================================================================
 def show_auth_page():
-    # Streamlit ke native styling blocks jo kabhi crash nahi hote
-    st.title("🏛️ URBAN EYE AI")
-    st.subheader("Enterprise Control Center Portal")
-    st.caption("National Intelligence & Surveillance Access Network")
+    # Colorful Title using safe Markdown colors
+    st.markdown("<h1 style='text-align: center; color: #00e5ff; font-family: sans-serif; letter-spacing: 2px;'>🏛️ URBAN EYE AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #00ffcc;'>🚀 Enterprise Control Center Portal</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #8892b0; font-size: 14px;'>NATIONAL INTELLIGENCE & SURVEILLANCE ACCESS NETWORK</p>", unsafe_allow_html=True)
     
-    st.markdown("---")
+    st.markdown("<hr style='border: 1px solid #00e5ff;'>", unsafe_allow_html=True)
     
     # Secure Session Toggle
-    keep_logged_in = st.checkbox("🔒 Keep control session active on this device", value=True, key="remember_me")
+    keep_logged_in = st.checkbox("🔒 Keep control session active on this device (Auto-Login)", value=True, key="remember_me")
     
-    tab1, tab2 = st.tabs(["🔑 SYSTEM ACCESSIBILITY", "📝 REQUEST OPERATOR CREDENTIALS"])
+    st.write(" ")
+    
+    # Colorful Accent Border with Tabs
+    tab1, tab2 = st.tabs(["🔵 SYSTEM ACCESSIBILITY", "🟢 REQUEST OPERATOR CREDENTIALS"])
 
     # Email/Password Login
     with tab1:
-        st.write(" ")
-        email = st.text_input("Clearance Email Address", key="l_email", placeholder="name@domain.com")
-        password = st.text_input("Secure Access Password", type="password", key="l_password", placeholder="••••••••••••")
+        st.markdown("<br><h4 style='color: #00e5ff;'>🔑 Authorized Officer Sign-In</h4>", unsafe_allow_html=True)
+        email = st.text_input("📡 Clearance Email Address", key="l_email", placeholder="name@domain.com")
+        password = st.text_input("🗝️ Secure Access Password", type="password", key="l_password", placeholder="••••••••••••")
         st.write(" ")
         
-        if st.button("AUTHORIZE SYSTEM SECURITY", use_container_width=True):
+        if st.button("🔵 AUTHORIZE SYSTEM SECURITY", use_container_width=True):
             if not supabase:
                 st.error("❌ Supabase client initialized nahi hai.")
                 return
@@ -108,12 +111,12 @@ def show_auth_page():
 
     # Email/Password Signup
     with tab2:
-        st.write(" ")
+        st.markdown("<br><h4 style='color: #00ffcc;'>📝 Register New Command Profile</h4>", unsafe_allow_html=True)
         s_email = st.text_input("Operator Registration Email", key="s_email", placeholder="operator@domain.com")
         s_password = st.text_input("Create Encrypted Password", type="password", key="s_password", placeholder="Minimum 6 characters")
         st.write(" ")
         
-        if st.button("REGISTER COMMAND PROFILE", use_container_width=True):
+        if st.button("🟢 REGISTER COMMAND PROFILE", use_container_width=True):
             if not supabase:
                 st.error("❌ Supabase client initialized nahi hai.")
                 return
@@ -127,7 +130,6 @@ def show_auth_page():
 # 4. CONTROL CONTROLLER (ROUTING & TRIGGER)
 # =====================================================================
 def main():
-    # URL parameters safely nikalna
     try:
         url_params = st.query_params.to_dict()
     except Exception:
