@@ -1,5 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
+from streamlit_cookies_controller import CookieController
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -20,13 +21,13 @@ except ImportError:
 SUPABASE_URL = "https://mrwkglukekmikenihkfp.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yd2tnbHVrZWttaWtlbmloa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDQwODgsImV4cCI6MjA5NzcyMDA4OH0.Y1UpomD34O8shloIV6OGVFET5BFVfawLk2yDJZQy8yM"
 
-# Client initialize karein aur session persistence ko default track par rakhein
+# Client aur Cookie Controller initialize karein
 if "supabase_client" not in st.session_state:
     st.session_state.supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 supabase = st.session_state.supabase_client
+controller = CookieController()
 
-# Session State Initialize karein login state barkrar rakhne ke liye
 if "user" not in st.session_state:
     st.session_state.user = None
 
@@ -83,9 +84,11 @@ def show_auth_page():
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user = res.user
-                # Token ko session state me lock kar rahe hain taake reload par yaad rahe
+                
+                # 🔥 Browser Cookie me access token save kar rahe hain
                 if res.session:
-                    st.session_state["access_token"] = res.session.access_token
+                    controller.set("urban_eye_token", res.session.access_token)
+                    
                 st.success("✅ Logged in successfully!")
                 st.rerun()
             except Exception as e:
@@ -97,7 +100,7 @@ def show_auth_page():
         s_password = st.text_input("Password", type="password", key="s_password")
         if st.button("Create Account", use_container_width=True):
             try:
-                res = supabase.auth.sign_up({"email": s_email, "password": s_password})
+                supabase.auth.sign_up({"email": s_email, "password": s_password})
                 st.info("📨 Signup successful! Aap ab direct login tab par jaakar login kar sakte hain.")
             except Exception as e:
                 st.error(f"❌ Signup Failed: {e}")
@@ -106,27 +109,33 @@ def show_auth_page():
 # 4. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
 # =====================================================================
 def main():
-    # 🔥 AUTO-LOGIN LOGIC: Agar user pehle se logged in tha to check karein
-    if st.session_state.user is None:
-        try:
-            # Supabase built-in active session check karta hai browser storage se
-            session = supabase.auth.get_session()
-            if session and session.user:
-                st.session_state.user = session.user
-            elif "access_token" in st.session_state:
-                # Agar state me token saved hai to user restore karein
-                user_res = supabase.auth.get_user(st.session_state["access_token"])
-                if user_res and user_res.user:
-                    st.session_state.user = user_res.user
-        except Exception:
-            pass
+    # 🔥 Cookie se saved token nikalne ki koshish karein
+    saved_token = controller.get("urban_eye_token")
 
-    # Routing Logic
-    if st.session_state.user is None:
+    if st.session_state.user is None and saved_token:
+        try:
+            # Saved token ke zariye user data dobara fetch karein (Bypassing Login)
+            user_res = supabase.auth.get_user(saved_token)
+            if user_res and user_res.user:
+                st.session_state.user = user_res.user
+        except Exception:
+            # Agar token expire ho chuka ho to cookie remove kar dein
+            controller.remove("urban_eye_token")
+
+    # Logout handler link ke liye (agar home.py se user login state clear kare)
+    if st.session_state.user is None and not saved_token:
+        show_auth_page()
+    elif st.session_state.user is None and saved_token:
+        # Recovery layer agar user update process me ho
         show_auth_page()
     else:
-        # User jab logout button dabaye tabhi login page wapas aaye
+        # Ek check ke agar user home se manual logout dabaye to cookie uradni hai
         show_home()
+        
+        # Agar home.py chalne ke baad session state khali ho jaye (User clicked logout)
+        if st.session_state.user is None:
+            controller.remove("urban_eye_token")
+            st.rerun()
 
 if __name__ == "__main__":
     main()
