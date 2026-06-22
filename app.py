@@ -28,10 +28,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# Streamlit Cloud par redirection ke liye live app ka link
-def get_current_url():
-    return "https://urban-eye-ai.streamlit.app"
-
 # =====================================================================
 # 2. EMAIL SENDING LOGIC (BACKEND REVENUE)
 # =====================================================================
@@ -100,25 +96,9 @@ def show_auth_page():
         if st.button("Create Account", use_container_width=True):
             try:
                 supabase.auth.sign_up({"email": s_email, "password": s_password})
-                st.info("📨 Signup successful! Please check your email inbox to confirm your account.")
+                st.info("📨 Signup successful! Verification settings ke mutabiq aap ab direct login kar sakte hain.")
             except Exception as e:
                 st.error(f"❌ Signup Failed: {e}")
-
-    st.markdown("---")
-    st.write("### Quick Access")
-    
-    # Google OAuth Button
-    if st.button("🔴 Sign in with Google", use_container_width=True):
-        try:
-            redirect_uri = get_current_url()
-            data = supabase.auth.sign_in_with_oauth({
-                "provider": "google",
-                "options": {"redirect_to": redirect_uri} 
-            })
-            if data and data.url:
-                st.markdown(f'<meta http-equiv="refresh" content="0; url={data.url}">', unsafe_allow_html=True)
-        except Exception as e:
-            st.error(f"❌ Google OAuth Error: {e}")
 
 # =====================================================================
 # 4. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
@@ -132,15 +112,7 @@ def main():
                 st.session_state.user = active_user.user
                 st.rerun()
         except Exception:
-            # URL Parameters se safely token nikalne ke liye inside try-except
-            try:
-                current_params = st.query_params.to_dict()
-                if "access_token" in current_params:
-                    token = current_params["access_token"]
-                    st.session_state.user = supabase.auth.get_user(token).user
-                    st.rerun()
-            except Exception:
-                pass
+            pass
 
     # Routing Logic: Agar login nahi hai to auth screen, warna home.py ka dashboard
     if st.session_state.user is None:
