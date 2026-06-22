@@ -307,4 +307,100 @@ def upload_section():
             else:
                 st.error("Live streaming components are offline. Verify system configuration logs.")
 
-# ================= LAYER MODULE
+# ================= LAYER MODULES =================
+def analytics():
+    st.title("📊 Statistical Performance Metrics")
+    df = pd.DataFrame({"Sector": ["Roads", "Garbage", "Water", "Electricity"], "Reports": [320, 210, 400, 150]})
+    c1, c2 = st.columns(2)
+    c1.line_chart(df.set_index("Sector"))
+    c2.bar_chart(df.set_index("Sector"))
+
+def track_submissions():
+    st.title("📋 Live System Incident Logs")
+    
+    if folium is not None and st_folium is not None:
+        try:
+            m = folium.Map(location=[24.8800, 67.0500], zoom_start=11, tiles="CartoDB dark_matter")
+            for record in st.session_state.get("incident_db", []):
+                color = "red" if "Critical" in record.get("severity", "") else "orange" if "Medium" in record.get("severity", "") else "blue"
+                folium.Marker(
+                    location=[record.get("lat", 24.8607), record.get("lon", 67.0011)],
+                    popup=f"ID: {record.get('id','')}",
+                    icon=folium.Icon(color=color)
+                ).add_to(m)
+            st_folium(m, width="100%", height=350, key="geo_matrix")
+        except Exception:
+            pass
+
+    st.markdown("---")
+    table_data = pd.DataFrame(st.session_state.get("incident_db", []))
+    if not table_data.empty:
+        st.dataframe(table_data, use_container_width=True, hide_index=True)
+
+    if st.session_state.get("incident_db", []):
+        st.subheader("🛠️ Operations Admin Action Console")
+        col_sel, col_act = st.columns(2)
+        target_id = col_sel.selectbox("Select Target Reference ID", [item["id"] for item in st.session_state["incident_db"]])
+        new_status = col_act.selectbox("Change Operational Status", ["🔴 Pending State", "🟢 Resolved State"])
+        
+        if st.button("Commit Status Updates to System Memory", use_container_width=True):
+            for item in st.session_state["incident_db"]:
+                if item["id"] == target_id:
+                    item["status"] = new_status
+            st.success(f"System status for {target_id} successfully updated!")
+            time.sleep(1)
+            st.rerun()
+
+def settings():
+    st.title("⚙️ Engine Configurations Panel")
+    ai_alerts = st.checkbox("Enable Automatic System Email Dispatches", value=st.session_state["system_settings"]["ai_alerts"])
+    logging = st.checkbox("Retain System Debug Logs", value=st.session_state["system_settings"]["logging"])
+    
+    if st.button("Save System Properties", use_container_width=True):
+        st.session_state["system_settings"]["ai_alerts"] = ai_alerts
+        st.session_state["system_settings"]["logging"] = logging
+        st.success("Settings saved to core runtime environment!")
+        time.sleep(1)
+        st.rerun()
+
+# ================= MAIN RUNTIME NAVIGATION HOOK =================
+def main():
+    load_css()
+    if "incident_db" not in st.session_state:
+        st.session_state["incident_db"] = []
+
+    menu = st.sidebar.radio(
+        "🏛 CONTROL CENTER NAVIGATION",
+        ["🏛 Core Dashboard", "📡 Detection Hub", "📊 Data Analytics", "📋 Central Logs Room", "⚙️ System Settings"]
+    )
+
+    st.sidebar.markdown("---")
+    user_email = st.session_state.user.email if (hasattr(st.session_state, 'user') and st.session_state.user) else "operator.command@gov.io"
+    st.sidebar.caption(f"Operator: {user_email}")
+    
+    if st.sidebar.button("Logout Session 🚪", use_container_width=True):
+        st.session_state.user = None
+        st.rerun()
+
+    if menu == "🏛 Core Dashboard":
+        dashboard()
+    elif menu == "📡 Detection Hub":
+        upload_section()
+    elif menu == "📊 Data Analytics":
+        analytics()
+    elif menu == "📋 Central Logs Room":
+        track_submissions()
+    elif menu == "⚙️ System Settings":
+        settings()
+
+if __name__ == "__main__":
+    try:
+        st.set_page_config(
+            page_title="Urban Eye AI - Control Center",
+            page_icon="👁️",
+            layout="wide",
+            initial_sidebar_state="expanded"
+        )
+    except Exception:
+        pass
+    main()
