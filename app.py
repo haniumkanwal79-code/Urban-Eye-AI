@@ -77,13 +77,20 @@ def show_auth_page():
     with tab1:
         email = st.text_input("Email Address", key="l_email")
         password = st.text_input("Password", type="password", key="l_password")
+        
+        # 🔥 Yeh raha aapka "Keep me logged in" button (checkbox)
+        keep_logged_in = st.checkbox("Keep me logged in", value=True, key="remember_me")
+        
         if st.button("Log In", use_container_width=True):
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user = res.user
                 
-                # Login hote hi URL parameter set karein taake is session me reload par login na maange
-                st.query_params["session_user"] = email
+                # Agar user ne checkbox tick kiya hai, to URL parameter me session lock kar do
+                if keep_logged_in:
+                    st.query_params["session_user"] = email
+                else:
+                    st.query_params.clear()
                 
                 st.success("✅ Logged in successfully!")
                 st.rerun()
@@ -107,7 +114,7 @@ def show_auth_page():
 def main():
     url_params = st.query_params.to_dict()
     
-    # URL parameter se user restore karne ka secure check
+    # Agar pehle se "Keep me logged in" active tha, to session background me utha lo
     if "session_user" in url_params and st.session_state.user is None:
         class DummyUser:
             def __init__(self, email):
@@ -118,20 +125,12 @@ def main():
     if st.session_state.user is None:
         show_auth_page()
     else:
-        # Sidebar me ek option de rahe hain taake aap apna personal direct link copy kar sakein
-        current_email = st.session_state.user.email
-        personal_link = f"https://urban-eye-ai.streamlit.app/?session_user={current_email}"
-        
-        st.sidebar.markdown("### 🔑 Your Auto-Login Link")
-        st.sidebar.caption("Is link ko bookmark kar lein taake baar baar login na karna pare:")
-        st.sidebar.code(personal_link, language="text")
-        
-        # Main dashboard launch karein
+        # Main dashboard launch karein (bina kisi code links ke sidebar me)
         show_home()
         
-        # Agar user home.py ke andar se "Logout" daba de
+        # Agar user home.py ke andar se manual "Logout" click kare
         if st.session_state.user is None:
-            st.query_params.clear()
+            st.query_params.clear() # Cache aur session tabah kar do
             st.rerun()
 
 if __name__ == "__main__":
