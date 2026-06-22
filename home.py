@@ -16,6 +16,12 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
+# Gemini SDK (New Client Architecture)
+try:
+    from google import genai
+except ImportError:
+    st.error("Please install the new Google GenAI library using: pip install google-genai")
+
 # ================= PAGE CONFIG =================
 def init_page_config():
     try:
@@ -41,9 +47,9 @@ except Exception:
 # ================= DYNAMIC DATABASE INITIALIZATION =================
 if "incident_db" not in st.session_state:
     st.session_state.incident_db = [
-        {"id": "UE-1024", "type": "Road", "location": "Metropolitan Highway", "timestamp": "2026-06-21 14:22:05", "status": "🟢 Resolved"},
-        {"id": "UE-1025", "type": "Garbage", "location": "Zone B Commercial", "timestamp": "2026-06-22 09:15:32", "status": "🔴 Pending"},
-        {"id": "UE-1026", "type": "Water", "location": "Outskirts Bypass", "timestamp": "2026-06-23 01:10:00", "status": "🔴 Pending"}
+        {"id": "UE-1024", "type": "Road", "location": "Metropolitan Highway", "timestamp": "2026-06-21 14:22:05", "status": "🟢 Resolved", "action_plan": "Fix asphalt potholes and restore line markings."},
+        {"id": "UE-1025", "type": "Garbage", "location": "Zone B Commercial", "timestamp": "2026-06-22 09:15:32", "status": "🔴 Pending", "action_plan": "Dispatch heavy waste loaders to clear illegal industrial dump."},
+        {"id": "UE-1026", "type": "Water", "location": "Outskirts Bypass", "timestamp": "2026-06-23 01:10:00", "status": "🔴 Pending", "action_plan": "Isolate secondary valves and repair main pipeline leakage."}
     ]
 
 # ================= HIGH-END EXECUTIVE CSS =================
@@ -168,8 +174,35 @@ def load_css():
     """, unsafe_allow_html=True)
 
 
+# ================= AI GENERATION SYSTEM (GEMINI LLM) =================
+def generate_ai_action_plan(issue_type, location):
+    """Generates standard legal and operational procedures for dispatch field workers using Gemini LLM"""
+    try:
+        api_key = st.secrets["gemini"]["GEMINI_API_KEY"]
+        client = genai.Client(api_key=api_key)
+        
+        prompt = f"""
+        You are an expert AI Smart City System. An urban municipal hazard has been detected.
+        Issue Type: {issue_type}
+        Location Target: {location}
+        
+        Provide a concise 3-bullet-point operational action plan for dispatch field workers. 
+        Keep it highly professional, specific to the issue, and under 60 words total. 
+        Include necessary machinery/safety equipment and zone management instructions. Do not use markdown bold inside bullets.
+        """
+        
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+        return response.text.strip()
+    except Exception as e:
+        # High-end standard production recovery logic fallback if API fails
+        return f"Standard deployment of {issue_type} emergency relief unit. Cordon off the area at {location} and inspect structural parameters safely."
+
+
 # ================= EMAIL SYSTEM =================
-def send_report_email(department_email, issue_type, location, timestamp, pdf_path):
+def send_report_email(department_email, issue_type, location, timestamp, pdf_path, ai_plan):
     try:
         sender_email = st.secrets["email"]["SENDER_EMAIL"]
         sender_password = st.secrets["email"]["APP_PASSWORD"]
@@ -192,6 +225,11 @@ INCIDENT LOG DETAILS
 Issue Detected : {issue_type}
 Location Zone  : {location}
 Timestamp      : {timestamp}
+
+----------------------------------------------
+AI GEN-AI FIELD OPERATIONS ACTION PLAN
+----------------------------------------------
+{ai_plan}
 ----------------------------------------------
 
 The official government compliance report has been generated and is attached to this email. Please take immediate action.
@@ -226,6 +264,18 @@ This is an automated system generation alert. Please do not reply to this addres
 # ================= REPORT SYSTEM =================
 def generate_report(issue_type, location, image_path):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Trigger Feature 6: Gemini Intelligence Plan Generation
+    with st.spinner("🤖 AI Brain Matrix is drafting targeted field action strategies..."):
+        ai_plan = generate_ai_action_plan(issue_type, location)
+    
+    st.markdown(f"""
+    <div style="background: rgba(0, 229, 255, 0.05); border: 1px dashed #00e5ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <strong style="color: #00e5ff;">🤖 AI GENERATED DESPATCH STRATEGY:</strong><br>
+        <span style="color: #e2e8f0; font-size: 13px;">{ai_plan}</span>
+    </div>
+    """, unsafe_allow_html=True)
+
     pdf_path = create_pdf(
         issue_type=issue_type,
         location=location,
@@ -240,7 +290,8 @@ def generate_report(issue_type, location, image_path):
         "type": issue_type,
         "location": location,
         "timestamp": timestamp,
-        "status": "🔴 Pending"
+        "status": "🔴 Pending",
+        "action_plan": ai_plan  # Store AI plan in local session state
     })
 
     department_directory = {
@@ -254,7 +305,7 @@ def generate_report(issue_type, location, image_path):
     target_email = department_directory.get(matched_issue, "central.command@government.gov")
     
     st.info(f"📬 Dispatching report to department endpoint: {target_email}...")
-    email_status = send_report_email(target_email, issue_type, location, timestamp, pdf_path)
+    email_status = send_report_email(target_email, issue_type, location, timestamp, pdf_path, ai_plan)
     
     if email_status:
         st.success("🚀 Report successfully routed and emailed to the department! ✅")
@@ -491,7 +542,7 @@ def track_submissions():
     st.markdown("""
     <div class="panel-info-box">
         <strong>LIVE TELEMETRY WORKSPACE:</strong><br>
-        Monitor active complaints filed into the server architecture. Toggle individual status states below.
+        Monitor active complaints and view Gen-AI Action Plans created for each ticket.
     </div>
     """, unsafe_allow_html=True)
 
@@ -512,7 +563,7 @@ def track_submissions():
             if item["id"] == target_id:
                 item["status"] = new_status
         st.success(f"System Record updated successfully: {target_id} is now set to {new_status}!")
-        st.try_rerun() if hasattr(st, "try_rerun") else st.rerun()
+        st.rerun()
 
 # ================= SETTINGS =================
 def settings():
@@ -535,7 +586,7 @@ def show_home():
     st.sidebar.caption(f"Logged in as: {user_email}")
     if st.sidebar.button("Logout 🚪", use_container_width=True):
         st.session_state.user = None
-        st.try_rerun() if hasattr(st, "try_rerun") else st.rerun()
+        st.rerun()
 
     st.sidebar.success("SYSTEM ACTIVE")
     st.sidebar.info("YOLOv8 AI Engine Running")
