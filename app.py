@@ -11,21 +11,25 @@ import os
 # 1. CONFIGURATION & CONNECTIONS
 # =====================================================================
 
-# Aapka Supabase Data (Jo aapne share kiya tha)
 SUPABASE_URL = "https://mrwkglukekmikenihkfp.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yd2tnbHVrZWttaWtlbmloa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDQwODgsImV4cCI6MjA5NzcyMDA4OH0.Y1UpomD34O8shloIV6OGVFET5BFVfawLk2yDJZQy8yM"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Session State Initialization (Login check rakhne ke liye)
 if "user" not in st.session_state:
     st.session_state.user = None
+
+# Automatically detect current live URL (Localhost ho ya Streamlit Cloud)
+def get_current_url():
+    # Streamlit Cloud ya local host ka dynamic domain nikalne ke liye
+    ctx = st.get_option("browser.gatherUsageStats") 
+    # Sabse safe tareeqa live production app ka absolute URL dena hai:
+    return "https://urban-eye-ai.streamlit.app"
 
 # =====================================================================
 # 2. EMAIL SENDING LOGIC (BACKEND)
 # =====================================================================
 def send_report_email(to_email, subject, body, attachment_path=None):
-    # ⚠️ Gmail settings: Apna actual Gmail aur Google App Password yahan likhein
     sender_email = "your_email@gmail.com" 
     sender_password = "your_app_password_here" 
 
@@ -36,7 +40,6 @@ def send_report_email(to_email, subject, body, attachment_path=None):
 
     msg.attach(MIMEText(body, 'plain'))
 
-    # Attachment handler
     if attachment_path and os.path.exists(attachment_path):
         filename = os.path.basename(attachment_path)
         with open(attachment_path, "rb") as attachment:
@@ -62,14 +65,12 @@ def send_report_email(to_email, subject, body, attachment_path=None):
 # 3. PAGES (FRONTEND)
 # =====================================================================
 
-# --- LOGIN / SIGNUP PAGE ---
 def show_auth_page():
     st.subheader("🔐 Access Portal")
     st.caption("Please login or sign up to access the Urban Issue Detection System.")
     
     tab1, tab2 = st.tabs(["🔑 Login", "📝 Sign Up"])
 
-    # Normal Login
     with tab1:
         email = st.text_input("Email Address", key="l_email")
         password = st.text_input("Password", type="password", key="l_password")
@@ -82,7 +83,6 @@ def show_auth_page():
             except Exception as e:
                 st.error(f"❌ Login Failed: {e}")
 
-    # Normal Signup
     with tab2:
         s_email = st.text_input("Email Address", key="s_email")
         s_password = st.text_input("Password", type="password", key="s_password")
@@ -96,23 +96,21 @@ def show_auth_page():
     st.markdown("---")
     st.write("### Quick Access")
     
-    # Google OAuth Login
     if st.button("🔴 Sign in with Google", use_container_width=True):
         try:
+            redirect_uri = get_current_url()
             data = supabase.auth.sign_in_with_oauth({
                 "provider": "google",
-                "options": {"redirect_to": "http://localhost:8501"}  # Localhost par redirection ke liye
+                "options": {"redirect_to": redirect_uri} 
             })
             if data and data.url:
                 st.markdown(f'<meta http-equiv="refresh" content="0; url={data.url}">', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"❌ Google OAuth Error: {e}")
 
-# --- MAIN DASHBOARD (AFTER LOGIN) ---
 def show_dashboard():
     user_email = st.session_state.user.email if st.session_state.user else "Authorized User"
     
-    # Sidebar
     st.sidebar.title("Dashboard")
     st.sidebar.success(f"Logged in as:\n{user_email}")
     if st.sidebar.button("Logout 🚪", use_container_width=True):
@@ -120,22 +118,16 @@ def show_dashboard():
         st.session_state.user = None
         st.rerun()
 
-    # Main Area
     st.header("🏙️ Urban Issue Detection & Reporting")
     st.write("Upload a video to detect urban infrastructure issues and auto-generate official reports.")
     
-    # 1. Video Upload Box
     uploaded_video = st.file_uploader("Upload Urban Video Footage (MP4, AVI)", type=["mp4", "avi"])
     
     if uploaded_video is not None:
         st.video(uploaded_video)
         st.info("🔄 Video uploaded successfully. Processing for issue detection...")
         
-        # --- AAPKA MODEL/PROCESSING CODE YAHAN CHALEGA ---
-        # Farz karein aapne video process karke niche di gayi PDF file generate kar li:
         fake_report_path = "urban_issue_report.pdf"
-        
-        # Testing ke liye hum ek dummy file bana lete hain agar pehle se nahi bani hui
         if not os.path.exists(fake_report_path):
             with open(fake_report_path, "w") as f:
                 f.write("URBAN ISSUE REPORT\nStatus: Action Required\nIssue: Potholes and Waste Detected.")
@@ -145,7 +137,6 @@ def show_dashboard():
         st.markdown("---")
         st.subheader("📬 Dispatch Report to Department")
         
-        # Departments Database Mapping
         departments = {
             "Waste Management Board": "waste.management@city.gov",
             "Road Infrastructure Authority": "roads.repair@city.gov",
@@ -177,6 +168,18 @@ def show_dashboard():
 # 4. CONTROL CONTROLLER (MAIN APP TRIGGER)
 # =====================================================================
 def main():
+    # ⚠️ Yeh part bohot zaroori hai Google login ke baad session catch karne ke liye
+    if st.session_state.user is None:
+        try:
+            # Agar URL me access token aa raha ho to session automatically restore karein
+            session = supabase.auth.get_session()
+            if session:
+                st.session_state.user = session.user
+                st.rerun()
+        except:
+            pass
+
+    # Page Routing
     if st.session_state.user is None:
         show_auth_page()
     else:
