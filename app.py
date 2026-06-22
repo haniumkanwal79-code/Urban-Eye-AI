@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+import time
 
 # =====================================================================
 # 1. INITIALIZATION & CONNECTIONS
@@ -39,7 +40,7 @@ try:
     from home import show_home
     show_home_function = show_home
 except ImportError:
-    pass  # Fallback to standard screen safely handled down below
+    pass  # Fallback smoothly if home.py is missing
 
 # =====================================================================
 # 2. EMAIL TRANSMISSION LOGIC
@@ -181,92 +182,4 @@ def show_auth_page():
             color: #e2e8f0 !important;
             font-weight: 600 !important;
             font-size: 13px !important;
-            letter-spacing: 0.5px;
-        }
-        .stTextInput input {
-            background-color: #090d16 !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 10px !important;
-            padding: 12px !important;
-            color: #ffffff !important;
-            transition: all 0.2s ease;
-        }
-        .stTextInput input:focus {
-            border-color: #00e5ff !important;
-            box-shadow: 0 0 0 1px #00e5ff !important;
-        }
-        
-        /* Modern Gradient CTA Button */
-        .stButton button {
-            background: linear-gradient(93deg, #00e5ff 0%, #00b4d8 100%) !important;
-            color: #090d16 !important;
-            font-weight: 700 !important;
-            font-size: 14px !important;
-            letter-spacing: 1.5px !important;
-            border: none !important;
-            border-radius: 10px !important;
-            padding: 14px !important;
-            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.15) !important;
-            transition: all 0.3s ease;
-        }
-        .stButton button:hover {
-            background: linear-gradient(93deg, #00ffcc 0%, #00e5ff 100%) !important;
-            box-shadow: 0 4px 25px rgba(0, 255, 204, 0.3) !important;
-            transform: translateY(-0.5px);
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    # 1. Main Header Box (Top-Level Styling)
-    st.markdown("""
-        <div class="premium-brand-card">
-            <h1 class="brand-header">URBAN EYE AI</h1>
-            <div class="system-tagline">✦ CONTROL DASHBOARD PORTAL ✦</div>
-            <div class="status-row">
-                <span class="status-pill pill-highlight">● SYSTEM: ONLINE</span>
-                <span class="status-pill">SECURE CONNECTION</span>
-                <span class="status-pill">VERSION 2.4</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Remember login checkbox
-    keep_logged_in = st.checkbox("Keep me logged in on this device", value=True, key="remember_me")
-    st.write(" ")
-    
-    # 2. Workspace Navigation Tabs
-    tab1, tab2 = st.tabs(["✦ SIGN IN", "✦ CREATE ACCOUNT"])
-
-    # Login Container
-    with tab1:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-            <div class="panel-info-box">
-                <strong>WELCOME BACK:</strong><br>
-                Please enter your email and password below to log into your dashboard room securely.
-            </div>
-        """, unsafe_allow_html=True)
-        
-        email = st.text_input("Email Address", key="l_email", placeholder="username@domain.com")
-        password = st.text_input("Password", type="password", key="l_password", placeholder="••••••••••••")
-        st.write(" ")
-        
-        if st.button("LOG IN TO SYSTEM", use_container_width=True):
-            if not email or not password:
-                st.warning("Please fill in all security fields.")
-                return
-            if not supabase:
-                st.error("Database connection is currently offline.")
-                return
-            with st.spinner("Checking your account details..."):
-                try:
-                    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                    st.session_state.user = res.user
-                    
-                    if keep_logged_in:
-                        st.query_params["session_user"] = email
-                    else:
-                        st.query_params.clear()
-                    
-                    st.success("Login successful! Loading your dashboard...")
-                    time.sleep(0
+            letter-spacing: 0.5
