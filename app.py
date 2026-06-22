@@ -24,13 +24,13 @@ supabase = st.session_state.get("supabase_client", None)
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# 🟢 Safely import your home dashboard function
+# Safely import your home dashboard function
 show_home_function = None
 try:
     from home import show_home
     show_home_function = show_home
 except ImportError:
-    st.warning("⚠️ 'home.py' file not found! But the login screen is active.")
+    st.warning("⚠️ 'home.py' file not found! Standard dashboard fallback active.")
 
 # =====================================================================
 # 2. EMAIL SENDING LOGIC (UNTOUCHED)
@@ -66,34 +66,52 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. FRESH & SIMPLE ENGLISH UI (WITH AWESOME GESTURES)
+# 3. HIGH-END UI STYLING & STRUCTURE
 # =====================================================================
 def show_auth_page():
-    # Crisp titles with a friendly pop
-    st.markdown("<h1 style='text-align: center; color: #00e5ff;'>🏛️ URBAN EYE AI</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #00ffcc;'>👋 Welcome to the Control Center!</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #8892b0; font-size: 14px;'>Manage your area surveillance and reports easily</p>", unsafe_allow_html=True)
+    # Injecting modern focused CSS overrides safely
+    st.markdown("""
+        <style>
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 10px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            font-weight: 600 !important;
+            letter-spacing: 0.5px;
+            padding: 10px 20px !important;
+        }
+        div[data-testid="stMarkdownContainer"] h1 {
+            font-weight: 800 !important;
+            letter-spacing: 3px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Clean, sophisticated Header
+    st.markdown("<h1 style='text-align: center; color: #ffffff; margin-bottom: 5px;'>URBAN EYE AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #00e5ff; font-size: 15px; font-weight: 600; letter-spacing: 1px; margin-top: 0px;'>✦ CONTROL DASHBOARD PORTAL ✦</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #64748b; font-size: 13px; margin-top: -10px;'>Secure infrastructure for localized area surveillance and analysis</p>", unsafe_allow_html=True)
     
-    st.markdown("<hr style='border: 1px solid #00e5ff;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border: 0.5px solid rgba(255, 255, 255, 0.15); margin-top: 20px; margin-bottom: 20px;'>", unsafe_allow_html=True)
     
-    # Simple Keep me logged in checkbox text
-    keep_logged_in = st.checkbox("🔒 Remember me on this device (Skip login next time!)", value=True, key="remember_me")
+    # Clean Session Checkbox
+    keep_logged_in = st.checkbox("Keep me logged in on this workstation", value=True, key="remember_me")
     
     st.write(" ")
     
-    # Modern active tabs
-    tab1, tab2 = st.tabs(["🔑 LOG IN TO YOUR ACCOUNT", "📝 CREATE NEW ACCOUNT"])
+    # Structured Professional Tabs
+    tab1, tab2 = st.tabs(["■ SYSTEM SIGN-IN", "■ CREATE OPERATOR ACCOUNT"])
 
     # Email/Password Login
     with tab1:
-        st.markdown("<br><h4 style='color: #00e5ff;'>👋 Hello Officer! Enter your email and password:</h4>", unsafe_allow_html=True)
-        email = st.text_input("📧 Your Email Address", key="l_email", placeholder="you@example.com")
-        password = st.text_input("🔒 Your Password", type="password", key="l_password", placeholder="Type your password here...")
+        st.markdown("<br><p style='color: #ffffff; font-size: 15px; font-weight: 500;'>Please verify your credentials to access the node:</p>", unsafe_allow_html=True)
+        email = st.text_input("Registered Email Address", key="l_email", placeholder="username@domain.com")
+        password = st.text_input("Account Password", type="password", key="l_password", placeholder="••••••••••••")
         st.write(" ")
         
-        if st.button("🚀 ENTER THE SYSTEM", use_container_width=True):
+        if st.button("AUTHENTICATE ACCESS", use_container_width=True):
             if not supabase:
-                st.error("❌ Supabase connection is down.")
+                st.error("Authentication system link is currently offline.")
                 return
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
@@ -104,27 +122,27 @@ def show_auth_page():
                 else:
                     st.query_params.clear()
                 
-                st.success("🎉 Awesome! Credentials verified. Taking you inside...")
+                st.success("Credentials authenticated successfully. Loading dashboard panels...")
                 st.rerun()
             except Exception as e:
-                st.error("❌ Login failed! Please check if your email or password is correct.")
+                st.error("Authentication failed. Please verify your email and password entry.")
 
     # Email/Password Signup
     with tab2:
-        st.markdown("<br><h4 style='color: #00ffcc;'>🆕 New here? Fill this up to sign up:</h4>", unsafe_allow_html=True)
-        s_email = st.text_input("📧 New Email Address", key="s_email", placeholder="Type your email here...")
-        s_password = st.text_input("🔒 Choose a Strong Password", type="password", key="s_password", placeholder="At least 6 characters long")
+        st.markdown("<br><p style='color: #ffffff; font-size: 15px; font-weight: 500;'>Register a new terminal user profile below:</p>", unsafe_allow_html=True)
+        s_email = st.text_input("Desired Email Account", key="s_email", placeholder="newuser@domain.com")
+        s_password = st.text_input("Secure Password Configuration", type="password", key="s_password", placeholder="Minimum of 6 characters required")
         st.write(" ")
         
-        if st.button("✨ CREATE ACCOUNT NOW", use_container_width=True):
+        if st.button("REGISTER OPERATOR PROFILE", use_container_width=True):
             if not supabase:
-                st.error("❌ Supabase connection is down.")
+                st.error("Authentication system link is currently offline.")
                 return
             try:
                 supabase.auth.sign_up({"email": s_email, "password": s_password})
-                st.info("📨 Congratulations! Your account has been made. Now switch to the LOG IN tab above to log in! 👉")
+                st.info("💡 Registration request processed successfully. Please navigate back to the SYSTEM SIGN-IN tab to enter.")
             except Exception as e:
-                st.error(f"❌ Couldn't create account. Error: {e}")
+                st.error(f"Unable to process registration profile. System reason: {e}")
 
 # =====================================================================
 # 4. CONTROL CONTROLLER (ROUTING & TRIGGER)
@@ -149,8 +167,8 @@ def main():
         if show_home_function:
             show_home_function()
         else:
-            st.success(f"🥳 You are successfully logged in as: {st.session_state.user.email}")
-            if st.button("Log Out 🚪"):
+            st.success(f"Session Active: {st.session_state.user.email}")
+            if st.button("Terminate Session"):
                 st.session_state.user = None
                 st.query_params.clear()
                 st.rerun()
