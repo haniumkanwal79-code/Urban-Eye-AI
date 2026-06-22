@@ -32,3 +32,8 @@ numpy
 pandas
 google-genai
 reportlab
+streamlit
+supabase
+opencv-python-headless
+ultralytics
+google-genai
