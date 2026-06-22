@@ -18,3 +18,5 @@ urllib3
 gcloud
 oauth2client
 streamlit-js-eval
+supabase==2.4.0
+streamlit
