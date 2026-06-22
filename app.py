@@ -17,12 +17,14 @@ except ImportError:
 # 1. CONFIGURATION & CONNECTIONS
 # =====================================================================
 
-# Aapka Live Supabase Project Data
 SUPABASE_URL = "https://mrwkglukekmikenihkfp.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yd2tnbHVrZWttaWtlbmloa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDQwODgsImV4cCI6MjA5NzcyMDA4OH0.Y1UpomD34O8shloIV6OGVFET5BFVfawLk2yDJZQy8yM"
 
-# Client initialize karein
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Client initialize karein aur session persistence ko default track par rakhein
+if "supabase_client" not in st.session_state:
+    st.session_state.supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+supabase = st.session_state.supabase_client
 
 # Session State Initialize karein login state barkrar rakhne ke liye
 if "user" not in st.session_state:
@@ -32,7 +34,6 @@ if "user" not in st.session_state:
 # 2. EMAIL SENDING LOGIC (BACKEND REVENUE)
 # =====================================================================
 def send_report_email(to_email, subject, body, attachment_path=None):
-    # ⚠️ IMPORTANT: Apna actual Gmail aur Google App Password yahan lagayein
     sender_email = "your_email@gmail.com" 
     sender_password = "your_app_password_here" 
 
@@ -43,7 +44,6 @@ def send_report_email(to_email, subject, body, attachment_path=None):
 
     msg.attach(MIMEText(body, 'plain'))
 
-    # Attachment logic
     if attachment_path and os.path.exists(attachment_path):
         filename = os.path.basename(attachment_path)
         with open(attachment_path, "rb") as attachment:
@@ -69,7 +69,6 @@ def send_report_email(to_email, subject, body, attachment_path=None):
 # 3. PAGES & UI (FRONTEND AUTHENTICATION)
 # =====================================================================
 
-# --- AUTHENTICATION SCREEN ---
 def show_auth_page():
     st.subheader("🔐 Access Portal")
     st.caption("Please login or sign up to access the Urban Issue Detection System.")
@@ -84,6 +83,9 @@ def show_auth_page():
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user = res.user
+                # Token ko session state me lock kar rahe hain taake reload par yaad rahe
+                if res.session:
+                    st.session_state["access_token"] = res.session.access_token
                 st.success("✅ Logged in successfully!")
                 st.rerun()
             except Exception as e:
@@ -95,8 +97,8 @@ def show_auth_page():
         s_password = st.text_input("Password", type="password", key="s_password")
         if st.button("Create Account", use_container_width=True):
             try:
-                supabase.auth.sign_up({"email": s_email, "password": s_password})
-                st.info("📨 Signup successful! Verification settings ke mutabiq aap ab direct login kar sakte hain.")
+                res = supabase.auth.sign_up({"email": s_email, "password": s_password})
+                st.info("📨 Signup successful! Aap ab direct login tab par jaakar login kar sakte hain.")
             except Exception as e:
                 st.error(f"❌ Signup Failed: {e}")
 
@@ -104,21 +106,26 @@ def show_auth_page():
 # 4. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
 # =====================================================================
 def main():
-    # Safely user session cache se restore karne ki koshish karein
+    # 🔥 AUTO-LOGIN LOGIC: Agar user pehle se logged in tha to check karein
     if st.session_state.user is None:
         try:
-            active_user = supabase.auth.get_user()
-            if active_user and hasattr(active_user, 'user') and active_user.user:
-                st.session_state.user = active_user.user
-                st.rerun()
+            # Supabase built-in active session check karta hai browser storage se
+            session = supabase.auth.get_session()
+            if session and session.user:
+                st.session_state.user = session.user
+            elif "access_token" in st.session_state:
+                # Agar state me token saved hai to user restore karein
+                user_res = supabase.auth.get_user(st.session_state["access_token"])
+                if user_res and user_res.user:
+                    st.session_state.user = user_res.user
         except Exception:
             pass
 
-    # Routing Logic: Agar login nahi hai to auth screen, warna home.py ka dashboard
+    # Routing Logic
     if st.session_state.user is None:
         show_auth_page()
     else:
-        # 🟢 Successfully login par home.py ka real YOLO surveillance center load hoga
+        # User jab logout button dabaye tabhi login page wapas aaye
         show_home()
 
 if __name__ == "__main__":
