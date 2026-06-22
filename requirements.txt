@@ -24,3 +24,11 @@ streamlit-cookies-controller==0.0.3
 streamlit
 folium
 streamlit-folium
+streamlit
+streamlit-webrtc
+ultralytics
+opencv-python
+numpy
+pandas
+google-genai
+reportlab
