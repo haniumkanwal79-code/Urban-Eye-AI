@@ -33,10 +33,12 @@ def init_page_config():
 def load_yolo_model():
     return YOLO("best.pt")
 
-model = load_yolo_model()
+try:
+    model = load_yolo_model()
+except Exception:
+    model = None
 
 # ================= DYNAMIC DATABASE INITIALIZATION =================
-# Initializing mockup persistent database state so no historical data is deleted
 if "incident_db" not in st.session_state:
     st.session_state.incident_db = [
         {"id": "UE-1024", "type": "Road", "location": "Metropolitan Highway", "timestamp": "2026-06-21 14:22:05", "status": "🟢 Resolved"},
@@ -48,12 +50,9 @@ if "incident_db" not in st.session_state:
 def load_css():
     st.markdown("""
     <style>
-    /* Global Container Adjustments */
     .block-container {
         padding-top: 2rem !important;
     }
-    
-    /* Sleek Premium Brand Top Card */
     .premium-brand-card {
         background: linear-gradient(135deg, #090d16 0%, #111827 100%);
         border: 1px solid rgba(0, 229, 255, 0.2);
@@ -64,7 +63,6 @@ def load_css():
         margin-bottom: 30px;
         text-align: center;
     }
-    
     h1.brand-header {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         font-weight: 800 !important;
@@ -72,7 +70,6 @@ def load_css():
         color: #ffffff !important;
         margin: 0 !important;
     }
-    
     .system-tagline {
         font-size: 11px !important;
         font-weight: 700 !important;
@@ -81,8 +78,6 @@ def load_css():
         margin-top: 6px;
         text-transform: uppercase;
     }
-
-    /* Minimalist Status Pills */
     .status-row {
         display: flex;
         justify-content: center;
@@ -105,8 +100,6 @@ def load_css():
         border-color: rgba(0, 255, 204, 0.2);
         background: rgba(0, 255, 204, 0.02);
     }
-
-    /* Clean Colored Grid Cards */
     .dashboard-card {
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.06);
@@ -132,8 +125,6 @@ def load_css():
         margin-top: 5px;
         letter-spacing: -0.5px;
     }
-    
-    /* Clean Notification Box */
     .panel-info-box {
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -149,8 +140,6 @@ def load_css():
         color: #ffffff;
         font-weight: 600;
     }
-
-    /* Custom Input Fields */
     div[data-testid="stWidgetLabel"] p {
         color: #e2e8f0 !important;
         font-weight: 600 !important;
@@ -162,11 +151,6 @@ def load_css():
         border-radius: 10px !important;
         color: #ffffff !important;
     }
-    .stTextInput input:focus {
-        border-color: #00e5ff !important;
-    }
-    
-    /* Modern Gradient Action Buttons */
     .stButton button {
         background: linear-gradient(93deg, #00e5ff 0%, #00b4d8 100%) !important;
         color: #090d16 !important;
@@ -175,14 +159,7 @@ def load_css():
         border: none !important;
         border-radius: 10px !important;
         padding: 12px !important;
-        transition: all 0.3s ease;
     }
-    .stButton button:hover {
-        background: linear-gradient(93deg, #00ffcc 0%, #00e5ff 100%) !important;
-        transform: translateY(-0.5px);
-    }
-    
-    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
         background: #060913 !important;
         border-right: 1px solid rgba(255, 255, 255, 0.05);
@@ -257,7 +234,6 @@ def generate_report(issue_type, location, image_path):
     )
     st.success("🏛 Official Government Report Generated")
 
-    # Automatically save incident log inside runtime session state
     new_id = f"UE-{1000 + len(st.session_state.incident_db) + 1}"
     st.session_state.incident_db.append({
         "id": new_id,
@@ -297,7 +273,7 @@ def dashboard():
     st.markdown("""
         <div class="premium-brand-card">
             <h1 class="brand-header">URBAN EYE AI</h1>
-            <div class="system-tagline">✦ LIVE MONITORING & ENFORCEMENT CENTER ✦</div>
+            <div class="system-tagline">✦ LIVE MONITORING & ENFORCEMENT center ✦</div>
             <div class="status-row">
                 <span class="status-pill pill-highlight">● SMART CITY ENGINE: ACTIVE</span>
                 <span class="status-pill">AI ENFORCEMENT</span>
@@ -306,15 +282,276 @@ def dashboard():
         </div>
     """, unsafe_allow_html=True)
 
-    # Dynamic counts driven by live dataset matrix
     total_db_count = 1237 + len(st.session_state.incident_db)
     pending_count = sum(1 for item in st.session_state.incident_db if "Pending" in item["status"])
     resolved_count = total_db_count - pending_count
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown(f'<div class="dashboard-card">Total Incidents<div class="metric-value">{total_db_count:,}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="dashboard-card">Total Incidents<div class="metric-value">{total_db_count}</div></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown(f'<div class="dashboard-card">Resolved Cases<div class="metric-value">{resolved_count:,}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="dashboard-card">Resolved Cases<div class="metric-value">{resolved_count}</div></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown(f
+        st.markdown(f'<div class="dashboard-card">Active Alerts<div class="metric-value" style="color: #ff3b30 !important;">{pending_count}</div></div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown('<div class="dashboard-card">Monitored Zones<div class="metric-value">18</div></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("""
+    <div class="panel-info-box">
+        <strong>💡 AI INSIGHT ENGINE:</strong><br>
+        High violation activity detected in metropolitan highway zones during late evening hours (6 PM - 11 PM).
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ================= DETECTION =================
+def upload_section():
+    st.title("📡 AI Surveillance & Detection Grid")
+    mode = st.radio("Select Mode", ["Image", "Video", "Live Camera"])
+
+    if mode == "Image":
+        image = st.file_uploader("Upload City Evidence Image", type=["jpg","png","jpeg"])
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
+
+        if image:
+            file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+            img = cv2.imdecode(file_bytes, 1)
+
+            if model:
+                results = model.predict(img, conf=0.5)
+                annotated = results[0].plot()
+                st.image(annotated, caption="AI Detection Output", use_container_width=True)
+
+                detected = []
+                for r in results:
+                    for box in r.boxes:
+                        cls = int(box.cls[0])
+                        name = model.names[cls]
+                        if name.lower() != "person":
+                            detected.append(name)
+
+                detected = list(set(detected))
+                st.success("Detection Completed ✔")
+                st.write(detected)
+
+                if st.button("📄 Generate Government Report"):
+                    img_path = f"gov_report_{datetime.now().timestamp()}.jpg"
+                    cv2.imwrite(img_path, img)
+                    for issue in detected:
+                        generate_report(issue, location, img_path)
+            else:
+                st.error("AI Model File ('best.pt') missing or failed to initialize.")
+
+    elif mode == "Video":
+        st.info("📡 Video Intelligence Mode Active")
+        video_file = st.file_uploader("Upload Video", type=["mp4","avi","mov"])
+
+        if video_file and model:
+            temp_path = "temp_video.mp4"
+            with open(temp_path, "wb") as f:
+                f.write(video_file.read())
+
+            cap = cv2.VideoCapture(temp_path)
+            detected_all = []
+            stframe = st.empty()
+
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                results = model.predict(frame, conf=0.5)
+                annotated = results[0].plot()
+                stframe.image(annotated, channels="BGR")
+
+                for r in results:
+                    for box in r.boxes:
+                        cls = int(box.cls[0])
+                        name = model.names[cls]
+                        if name.lower() != "person":
+                            detected_all.append(name)
+
+            cap.release()
+            detected_all = list(set(detected_all))
+            st.success(f"Analysis Completed ✔ | Issues: {detected_all}")
+
+    elif mode == "Live Camera":
+        st.warning("🔴 LIVE SURVEILLANCE ACTIVE")
+        location = st.text_input("📍 Location Tag", "Unknown Zone")
+
+        if "last_frame" not in st.session_state:
+            st.session_state.last_frame = None
+        if "last_detected" not in st.session_state:
+            st.session_state.last_detected = []
+
+        class GovCamera(VideoTransformerBase):
+            def transform(self, frame):
+                img = frame.to_ndarray(format="bgr24")
+                if model:
+                    results = model.predict(img, conf=0.5)
+                    detected = []
+
+                    for r in results:
+                        for box in r.boxes:
+                            cls = int(box.cls[0])
+                            name = model.names[cls]
+                            if name.lower() != "person":
+                                detected.append(name)
+                            x1, y1, x2, y2 = map(int, box.xyxy[0])
+                            cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,255), 2)
+
+                    if detected:
+                        st.session_state.last_frame = img.copy()
+                        st.session_state.last_detected = list(set(detected))
+                return img
+
+        webrtc_streamer(
+            key="gov-live",
+            video_transformer_factory=GovCamera,
+            media_stream_constraints={"video": True, "audio": False}
+        )
+
+        if st.button("📸 CAPTURE & REPORT"):
+            if st.session_state.last_frame is not None:
+                img_path = f"live_{datetime.now().timestamp()}.jpg"
+                cv2.imwrite(img_path, st.session_state.last_frame)
+                for issue in st.session_state.last_detected:
+                    generate_report(issue, location, img_path)
+
+
+# ================= ANALYTICS =================
+def analytics():
+    st.markdown("""
+        <div class="premium-brand-card">
+            <h1 class="brand-header">INTELLIGENCE ANALYTICS CENTER</h1>
+            <div class="system-tagline">✦ DATA TRENDS & PREDICTIVE VIOLATION SYSTEM ✦</div>
+            <div class="status-row">
+                <span class="status-pill pill-highlight">ACCURACY: 78%</span>
+                <span class="status-pill">REAL-TIME DATA</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    total_db_count = 1237 + len(st.session_state.incident_db)
+    pending_count = sum(1 for item in st.session_state.incident_db if "Pending" in item["status"])
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f'<div class="dashboard-card">Total Reports<div class="metric-value">{total_db_count}</div></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="dashboard-card">Avg Accuracy<div class="metric-value">78%</div></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown(f'<div class="dashboard-card">Active Alerts<div class="metric-value" style="color: #ff3b30 !important;">{pending_count}</div></div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown('<div class="dashboard-card">Monitored Zones<div class="metric-value">18</div></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    df = pd.DataFrame({
+        "Sector": ["Road", "Garbage", "Water", "Electricity", "Other"],
+        "Reports": [320, 210, 400, 150, 160]
+    })
+
+    colA, colB = st.columns(2)
+    with colA:
+        st.subheader("📈 Sector Wise Reports Trend")
+        st.line_chart(df.set_index("Sector"))
+        st.bar_chart(df.set_index("Sector"))
+
+    with colB:
+        st.subheader("🔥 Risk Heatmap Simulation")
+        heat_df = pd.DataFrame({
+            "Zone A": [8, 3, 5],
+            "Zone B": [6, 9, 2],
+            "Zone C": [4, 7, 6]
+        }, index=["Road", "Garbage", "Water"])
+        st.dataframe(heat_df, use_container_width=True)
+
+    st.markdown("""
+    <div class="panel-info-box">
+        <strong>🧠 PREDICTIVE INSIGHT DETAILS:</strong><br><br>
+        • High violation density detected in ROAD sector (Urban highways).<br>
+        • Garbage complaints increasing in Zone B (Possible waste management failure).<br>
+        • Water-related issues stable but rising in outskirts.<br>
+        • Predictive Alert: Next 7 days → 12% increase in road violations expected.
+    </div>
+    """, unsafe_allow_html=True)
+
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        "⬇ Download Intelligence Report (CSV)",
+        data=csv,
+        file_name="national_intelligence_report.csv",
+        mime="text/csv"
+    )
+
+# ================= TRACK SUBMISSIONS & ACTION CENTER =================
+def track_submissions():
+    st.title("📋 Live Incident Tracking Room")
+    st.markdown("""
+    <div class="panel-info-box">
+        <strong>LIVE TELEMETRY WORKSPACE:</strong><br>
+        Monitor active complaints filed into the server architecture. Toggle individual status states below.
+    </div>
+    """, unsafe_allow_html=True)
+
+    table_data = pd.DataFrame(st.session_state.incident_db)
+    st.dataframe(table_data, use_container_width=True, hide_index=True)
+    
+    st.markdown("---")
+    st.subheader("🛠️ Admin Action Center Control")
+    
+    col_sel, col_act = st.columns(2)
+    with col_sel:
+        target_id = st.selectbox("Select Incident ID to Update", [item["id"] for item in st.session_state.incident_db])
+    with col_act:
+        new_status = st.selectbox("Assign Action Status Flag", ["🔴 Pending", "🟢 Resolved"])
+        
+    if st.button("Commit Status Update to Cluster Matrix", use_container_width=True):
+        for item in st.session_state.incident_db:
+            if item["id"] == target_id:
+                item["status"] = new_status
+        st.success(f"System Record updated successfully: {target_id} is now set to {new_status}!")
+        st.try_rerun() if hasattr(st, "try_rerun") else st.rerun()
+
+# ================= SETTINGS =================
+def settings():
+    st.title("⚙️ Control Panel Settings")
+    st.checkbox("Enable AI Alerts", value=True)
+    st.checkbox("Enable Automated System Logging", value=True)
+    st.selectbox("System Priority Level", ["Low", "Medium", "High", "Critical"])
+
+
+# ================= MAIN RUN FUNCTION =================
+def show_home():
+    load_css()
+    menu = st.sidebar.radio(
+        "🏛 CONTROL CENTER",
+        ["🏛 Dashboard", "📡 Surveillance Grid", "📊 Analytics", "📋 Track Submissions", "⚙️ Settings"]
+    )
+
+    st.sidebar.markdown("---")
+    user_email = st.session_state.user.email if (hasattr(st.session_state, 'user') and st.session_state.user) else "Authorized User"
+    st.sidebar.caption(f"Logged in as: {user_email}")
+    if st.sidebar.button("Logout 🚪", use_container_width=True):
+        st.session_state.user = None
+        st.try_rerun() if hasattr(st, "try_rerun") else st.rerun()
+
+    st.sidebar.success("SYSTEM ACTIVE")
+    st.sidebar.info("YOLOv8 AI Engine Running")
+
+    if menu == "🏛 Dashboard":
+        dashboard()
+    elif menu == "📡 Surveillance Grid":
+        upload_section()
+    elif menu == "📊 Analytics":
+        analytics()
+    elif menu == "📋 Track Submissions":
+        track_submissions()
+    elif menu == "⚙️ Settings":
+        settings()
+
+# Standalone testing backup
+if __name__ == "__main__":
+    init_page_config()
+    show_home()
