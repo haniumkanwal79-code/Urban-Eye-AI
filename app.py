@@ -64,54 +64,144 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. PAGES & UI (FRONTEND AUTHENTICATION)
+# 3. PREMIUM UI STYLING (ONLY FOR AUTH PAGE)
+# =====================================================================
+def load_auth_css():
+    st.markdown("""
+    <style>
+    /* Gradient Background for Portal */
+    .stApp {
+        background: radial-gradient(circle at center, #0f172a 0%, #050814 100%) !important;
+    }
+    
+    /* Center Card Custom Styling */
+    .auth-container {
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(16px);
+        padding: 35px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        box-shadow: 0px 0px 40px rgba(0, 229, 255, 0.15);
+        margin-bottom: 25px;
+    }
+    
+    /* Main Portal Heading */
+    .portal-title {
+        font-size: 38px;
+        font-weight: 800;
+        color: #00e5ff;
+        text-align: center;
+        letter-spacing: 2px;
+        text-shadow: 0px 0px 15px rgba(0, 229, 255, 0.5);
+        margin-bottom: 5px;
+    }
+    
+    .portal-subtitle {
+        color: #a9c4d8;
+        text-align: center;
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+    
+    /* Premium Buttons Customization */
+    .stButton button {
+        background: linear-gradient(90deg, #00e5ff, #00ffcc) !important;
+        color: #050814 !important;
+        font-weight: bold !important;
+        letter-spacing: 1px;
+        border-radius: 10px !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        transition: 0.3s ease-in-out !important;
+    }
+    
+    .stButton button:hover {
+        transform: scale(1.02) !important;
+        box-shadow: 0px 0px 20px rgba(0, 255, 204, 0.6) !important;
+    }
+    
+    /* Tabs Styling adjustment */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background-color: transparent;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 45px;
+        white-space: pre;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        color: #ffffff;
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: rgba(0, 229, 255, 0.15) !important;
+        border: 1px solid #00e5ff !important;
+        color: #00e5ff !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# =====================================================================
+# 4. PAGES & UI (FRONTEND AUTHENTICATION)
 # =====================================================================
 
 def show_auth_page():
-    st.subheader("🔐 Access Portal")
-    st.caption("Please login or sign up to access the Urban Issue Detection System.")
+    # Premium Styles Inject karein
+    load_auth_css()
     
-    # 🔥 Checkbox ko Tabs se bahar nikal diya hai taake yeh 100% hamesha nazar aaye
-    keep_logged_in = st.checkbox("🔄 Keep me logged in", value=True, key="remember_me")
+    # Visual Box Structure container
+    st.markdown('<div class="auth-container">', unsafe_allow_html=True)
+    st.markdown('<div class="portal-title">🏛️ URBAN EYE AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="portal-subtitle">National Intelligence & Surveillance Access Portal</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("---")
+    # Auto-Login Checkbox (Clean UI Placement)
+    keep_logged_in = st.checkbox("🔄 Keep me logged in permanently", value=True, key="remember_me")
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["🔑 Login", "📝 Sign Up"])
+    tab1, tab2 = st.tabs(["🔐 Authorized Login", "📝 Officer Registration"])
 
     # Email/Password Login
     with tab1:
-        email = st.text_input("Email Address", key="l_email")
-        password = st.text_input("Password", type="password", key="l_password")
+        st.markdown("<br>", unsafe_allow_html=True)
+        email = st.text_input("🛡️ Registered Email Address", key="l_email", placeholder="Enter official email...")
+        password = st.text_input("🔑 Access Password", type="password", key="l_password", placeholder="Enter secure password...")
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        if st.button("Log In", use_container_width=True):
+        if st.button("AUTHENTICATE & ENTER SYSTEM", use_container_width=True):
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user = res.user
                 
-                # Agar main checkbox checked hai to URL me save karein
                 if keep_logged_in:
                     st.query_params["session_user"] = email
                 else:
                     st.query_params.clear()
                 
-                st.success("✅ Logged in successfully!")
+                st.success("✅ Credentials verified! Access granted.")
                 st.rerun()
             except Exception as e:
-                st.error(f"❌ Login Failed: {e}")
+                st.error(f"❌ Authentication Failed: {e}")
 
     # Email/Password Signup
     with tab2:
-        s_email = st.text_input("Email Address", key="s_email")
-        s_password = st.text_input("Password", type="password", key="s_password")
-        if st.button("Create Account", use_container_width=True):
+        st.markdown("<br>", unsafe_allow_html=True)
+        s_email = st.text_input("📧 Request Account Email", key="s_email", placeholder="Enter your email address...")
+        s_password = st.text_input("🔒 Generate Access Password", type="password", key="s_password", placeholder="Create strong password...")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("INITIALIZE COMMAND ACCOUNT", use_container_width=True):
             try:
                 supabase.auth.sign_up({"email": s_email, "password": s_password})
-                st.info("📨 Signup successful! Aap ab direct login tab par jaakar login kar sakte hain.")
+                st.info("📨 Account creation request initialized! You can now switch to the login tab to log in.")
             except Exception as e:
                 st.error(f"❌ Signup Failed: {e}")
 
 # =====================================================================
-# 4. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
+# 5. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
 # =====================================================================
 def main():
     url_params = st.query_params.to_dict()
