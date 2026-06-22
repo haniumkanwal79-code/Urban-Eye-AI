@@ -196,8 +196,8 @@ def send_report_email(department_email, issue_type, location, timestamp, pdf_pat
     try:
         sender_email = st.secrets["email"]["SENDER_EMAIL"]
         sender_password = st.secrets["email"]["APP_PASSWORD"]
-    except Exception:
-        st.error("🔑 Email credentials missing in Streamlit Secrets!")
+    except Exception as e:
+        st.error(f"🔑 Email Credentials Blocked: Config logs are empty/missing in Secrets! {str(e)}")
         return False
 
     msg = MIMEMultipart()
@@ -241,13 +241,15 @@ This is an automated system generation alert. Please do not reply to this addres
 
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
         server.starttls()
+        server.ehlo()
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, department_email, msg.as_string())
         server.quit()
         return True
     except Exception as e:
-        st.error(f"Failed to transmit automated email notification: {str(e)}")
+        st.error(f"Failed to transmit automated email notification over SMTP: {str(e)}")
         return False
 
 
@@ -272,7 +274,7 @@ def generate_report(issue_type, location, image_path):
         image_path=image_path,
         timestamp=timestamp
     )
-    st.success("🏛 Official Government Report Generated")
+    st.success(f"🏛 Official Government Report Generated for {issue_type}")
 
     if "incident_db" not in st.session_state:
         st.session_state.incident_db = []
@@ -301,13 +303,13 @@ def generate_report(issue_type, location, image_path):
     email_status = send_report_email(target_email, issue_type, location, timestamp, pdf_path, ai_plan)
     
     if email_status:
-        st.success("🚀 Report successfully routed and emailed to the department! ✅")
+        st.success(f"🚀 Report successfully routed and emailed to the department ({target_email})! ✅")
 
     with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Official Report (Gov Format)",
+            f"⬇ Download Official Report ({issue_type})",
             f,
-            file_name="National_Urban_Report.pdf",
+            file_name=f"National_Urban_Report_{issue_type}.pdf",
             mime="application/pdf"
         )
 
@@ -390,6 +392,7 @@ def upload_section():
     elif mode == "Video":
         st.info("📡 Video Intelligence Mode Active")
         video_file = st.file_uploader("Upload Video", type=["mp4","avi","mov"])
+        location = st.text_input("📍 Location Tag", "Video Surveillance Zone")
 
         if video_file and model:
             temp_path = "temp_video.mp4"
@@ -399,6 +402,9 @@ def upload_section():
             cap = cv2.VideoCapture(temp_path)
             detected_all = []
             stframe = st.empty()
+            
+            # Placeholder for saving last frame containing issue evidence
+            last_valid_frame = None
 
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -409,16 +415,37 @@ def upload_section():
                 annotated = results[0].plot()
                 stframe.image(annotated, channels="BGR")
 
+                frame_has_issue = False
                 for r in results:
                     for box in r.boxes:
                         cls = int(box.cls[0])
                         name = model.names[cls]
                         if name.lower() != "person":
                             detected_all.append(name)
+                            frame_has_issue = True
+                
+                if frame_has_issue:
+                    last_valid_frame = frame.copy()
 
             cap.release()
             detected_all = list(set(detected_all))
-            st.success(f"Analysis Completed ✔ | Issues: {detected_all}")
+            
+            st.success(f"🎥 Video Processing Completed ✔ | Detected Issues: {detected_all}")
+            
+            # 🌟 RECONCILIATION REPORT ENGINE FOR VIDEO
+            if detected_all:
+                if last_valid_frame is not None:
+                    evidence_path = f"video_evidence_{datetime.now().timestamp()}.jpg"
+                    cv2.imwrite(evidence_path, last_valid_frame)
+                else:
+                    evidence_path = None
+                
+                st.markdown("### 📋 Dispatch & Reporting Hub")
+                if st.button("🚀 Process & Dispatch All Video Incident Reports"):
+                    for issue in detected_all:
+                        generate_report(issue, location, evidence_path)
+            else:
+                st.info("No urban hazards/issues flagged in this footage.")
 
     elif mode == "Live Camera":
         st.warning("🔴 LIVE SURVEILLANCE ACTIVE")
