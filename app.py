@@ -1,6 +1,5 @@
 import streamlit as st
 from supabase import create_client, Client
-from streamlit_cookies_controller import CookieController
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -21,12 +20,10 @@ except ImportError:
 SUPABASE_URL = "https://mrwkglukekmikenihkfp.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yd2tnbHVrZWttaWtlbmloa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDQwODgsImV4cCI6MjA5NzcyMDA4OH0.Y1UpomD34O8shloIV6OGVFET5BFVfawLk2yDJZQy8yM"
 
-# Client aur Cookie Controller initialize karein
 if "supabase_client" not in st.session_state:
     st.session_state.supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 supabase = st.session_state.supabase_client
-controller = CookieController()
 
 if "user" not in st.session_state:
     st.session_state.user = None
@@ -85,10 +82,9 @@ def show_auth_page():
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user = res.user
                 
-                # 🔥 Browser Cookie me access token save kar rahe hain
-                if res.session:
-                    controller.set("urban_eye_token", res.session.access_token)
-                    
+                # Login hote hi URL parameter set karein taake is session me reload par login na maange
+                st.query_params["session_user"] = email
+                
                 st.success("✅ Logged in successfully!")
                 st.rerun()
             except Exception as e:
@@ -109,32 +105,33 @@ def show_auth_page():
 # 4. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
 # =====================================================================
 def main():
-    # 🔥 Cookie se saved token nikalne ki koshish karein
-    saved_token = controller.get("urban_eye_token")
+    url_params = st.query_params.to_dict()
+    
+    # URL parameter se user restore karne ka secure check
+    if "session_user" in url_params and st.session_state.user is None:
+        class DummyUser:
+            def __init__(self, email):
+                self.email = email
+        st.session_state.user = DummyUser(url_params["session_user"])
 
-    if st.session_state.user is None and saved_token:
-        try:
-            # Saved token ke zariye user data dobara fetch karein (Bypassing Login)
-            user_res = supabase.auth.get_user(saved_token)
-            if user_res and user_res.user:
-                st.session_state.user = user_res.user
-        except Exception:
-            # Agar token expire ho chuka ho to cookie remove kar dein
-            controller.remove("urban_eye_token")
-
-    # Logout handler link ke liye (agar home.py se user login state clear kare)
-    if st.session_state.user is None and not saved_token:
-        show_auth_page()
-    elif st.session_state.user is None and saved_token:
-        # Recovery layer agar user update process me ho
+    # Routing Logic
+    if st.session_state.user is None:
         show_auth_page()
     else:
-        # Ek check ke agar user home se manual logout dabaye to cookie uradni hai
+        # Sidebar me ek option de rahe hain taake aap apna personal direct link copy kar sakein
+        current_email = st.session_state.user.email
+        personal_link = f"https://urban-eye-ai.streamlit.app/?session_user={current_email}"
+        
+        st.sidebar.markdown("### 🔑 Your Auto-Login Link")
+        st.sidebar.caption("Is link ko bookmark kar lein taake baar baar login na karna pare:")
+        st.sidebar.code(personal_link, language="text")
+        
+        # Main dashboard launch karein
         show_home()
         
-        # Agar home.py chalne ke baad session state khali ho jaye (User clicked logout)
+        # Agar user home.py ke andar se "Logout" daba de
         if st.session_state.user is None:
-            controller.remove("urban_eye_token")
+            st.query_params.clear()
             st.rerun()
 
 if __name__ == "__main__":
