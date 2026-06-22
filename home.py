@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 import time
 
-# Robust fail-safe imports for ML and Mapping architectures
+# ================= ROBUST FAIL-SAFE IMPORTS =================
 try:
     from ultralytics import YOLO
 except Exception:
@@ -28,7 +28,8 @@ except Exception:
 try:
     from pdf_utils import create_pdf
 except Exception:
-    def create_pdf(**kwargs): return "mock_report.pdf"
+    def create_pdf(**kwargs):
+        return "mock_report.pdf"
 
 # Standard Email utility libraries
 import smtplib
@@ -244,7 +245,6 @@ def upload_section():
 def track_submissions():
     st.title("📋 Live System Repository Ledger")
     
-    # Check if geo modules initialized cleanly
     if folium is not None and st_folium is not None:
         try:
             st.subheader("📍 Geospatial Live Telemetry Architecture")
@@ -265,7 +265,6 @@ def track_submissions():
     if not table_data.empty:
         st.dataframe(table_data, use_container_width=True, hide_index=True)
 
-    # 100% Working Operational Action Matrix Control Buttons
     if st.session_state.get("incident_db", []):
         st.subheader("🛠️ Core Cluster Management Node (Admin Panel)")
         col_sel, col_act = st.columns(2)
@@ -282,4 +281,47 @@ def track_submissions():
 
 # ================= SETTINGS MANAGER =================
 def settings():
-    st.title("⚙
+    st.title("⚙️ Engine Architecture Matrix Settings")
+    ai_alerts = st.checkbox("Enable Automated AI Notifications Engine", value=st.session_state["system_settings"]["ai_alerts"])
+    logging = st.checkbox("Retain Historical Event Logs Pool", value=st.session_state["system_settings"]["logging"])
+    
+    if st.button("Deploy Configuration Overrides", use_container_width=True):
+        st.session_state["system_settings"]["ai_alerts"] = ai_alerts
+        st.session_state["system_settings"]["logging"] = logging
+        st.success("Configuration vectors saved to production state space matrix!")
+        time.sleep(1)
+        st.rerun()
+
+# ================= MAIN COMPLIANCE LAYER HOOK =================
+def show_home():
+    load_css()
+    if "incident_db" not in st.session_state:
+        st.session_state["incident_db"] = []
+
+    menu = st.sidebar.radio(
+        "🏛 SYSTEM COMMAND CONTROL",
+        ["🏛 Core Dashboard", "📡 Detection Hub", "📊 System Analytics", "📋 Records Room", "⚙️ Configurations Layer"]
+    )
+
+    st.sidebar.markdown("---")
+    user_email = st.session_state.user.email if (hasattr(st.session_state, 'user') and st.session_state.user) else "operator.command@gov.io"
+    st.sidebar.caption(f"Operator Node: {user_email}")
+    
+    if st.sidebar.button("Terminated Session Matrix 🚪", use_container_width=True):
+        st.session_state.user = None
+        st.rerun()
+
+    if menu == "🏛 Core Dashboard":
+        dashboard()
+    elif menu == "📡 Detection Hub":
+        upload_section()
+    elif menu == "📊 System Analytics":
+        analytics()
+    elif menu == "📋 Records Room":
+        track_submissions()
+    elif menu == "⚙️ Configurations Layer":
+        settings()
+
+if __name__ == "__main__":
+    init_page_config()
+    show_home()
