@@ -64,106 +64,108 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. ULTRA-PREMIUM PURE CSS INJECTION (SAFE & STUNNING)
+# 3. EXECUTIVE-LEVEL AUTH CSS (CLEAN, MINIMAL & STUNNING)
 # =====================================================================
-def load_luxury_auth_css():
+def load_executive_auth_css():
     st.markdown("""
     <style>
-    /* Glowing Title Box */
-    .premium-header {
-        background: linear-gradient(135deg, rgba(0, 229, 255, 0.05) 0%, rgba(0, 255, 204, 0.02) 100%);
-        border: 1px solid rgba(0, 229, 255, 0.2);
-        padding: 25px;
-        border-radius: 16px;
-        box-shadow: 0px 10px 30px rgba(0, 229, 255, 0.05);
+    /* Professional Modern Dashboard Block */
+    .executive-card {
+        background: linear-gradient(145deg, #0e1626 0%, #060b13 100%);
+        border: 1px solid rgba(0, 229, 255, 0.18);
+        padding: 30px;
+        border-radius: 18px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(0, 229, 255, 0.03);
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
     
-    /* Cyber Title Neon Animation Text */
-    .portal-main-title {
-        font-size: 46px;
-        font-weight: 900;
-        letter-spacing: 5px;
-        background: linear-gradient(90deg, #ffffff, #00e5ff, #00ffcc, #ffffff);
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: shine 4s linear infinite;
+    /* Clean Luxury Title */
+    .brand-title {
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: 6px;
+        color: #ffffff;
         margin: 0;
+        text-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
     }
     
-    .portal-sub-text {
-        color: #8892b0;
-        font-size: 14px;
-        letter-spacing: 2px;
+    .brand-glow-tag {
+        color: #00e5ff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 3px;
         text-transform: uppercase;
-        margin-top: 8px;
+        margin-top: 6px;
+        text-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
     }
 
-    /* Input Fields Border Styling */
+    /* Slick Input Customization */
     .stTextInput input {
-        background-color: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(0, 229, 255, 0.2) !important;
-        border-radius: 10px !important;
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
         color: #ffffff !important;
-        transition: all 0.3s ease-in-out !important;
+        font-size: 14px !important;
+        transition: all 0.25s ease !important;
     }
     .stTextInput input:focus {
-        border-color: #00ffcc !important;
-        box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.3) !important;
+        border-color: #00e5ff !important;
+        background-color: rgba(0, 229, 255, 0.02) !important;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.15) !important;
     }
 
-    /* Style Streamlit Input Labels */
+    /* Input Box Top Labels styling */
     div[data-testid="stWidgetLabel"] p {
-        color: #00e5ff !important;
+        color: #94a3b8 !important;
         font-weight: 600 !important;
+        font-size: 13px !important;
         letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
 
-    /* Customizing Streamlit Tabs Header to look like an app dashboard */
+    /* Executive Styled Tabs List */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: rgba(255, 255, 255, 0.02) !important;
+        background-color: rgba(0, 0, 0, 0.2) !important;
         border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        padding: 5px !important;
+        padding: 4px !important;
         border-radius: 12px !important;
     }
     
     .stTabs [data-baseweb="tab"] {
+        font-size: 13px !important;
         font-weight: 700 !important;
         letter-spacing: 1px !important;
-        border-radius: 8px !important;
-        color: #8892b0 !important;
-        border: none !important;
+        border-radius: 9px !important;
+        color: #64748b !important;
+        padding: 12px 20px !important;
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(0, 255, 204, 0.1) 100%) !important;
-        border: 1px solid #00e5ff !important;
-        color: #00e5ff !important;
+        background-color: #00e5ff !important;
+        color: #060b13 !important;
+        box-shadow: 0 4px 12px rgba(0, 229, 255, 0.25) !important;
     }
 
-    /* Luxurious Glowing Login Button */
+    /* High-End Enterprise Button */
     .stButton button {
-        background: linear-gradient(90deg, #00e5ff 0%, #00ffcc 100%) !important;
-        color: #030712 !important;
-        font-weight: 800 !important;
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
+        background: linear-gradient(135deg, #00e5ff 0%, #00b4d8 100%) !important;
+        color: #060b13 !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        letter-spacing: 1.5px !important;
         border-radius: 12px !important;
         border: none !important;
-        padding: 14px 24px !important;
-        box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3) !important;
-        transition: all 0.3s ease-in-out !important;
+        padding: 14px 20px !important;
+        box-shadow: 0 4px 14px rgba(0, 229, 255, 0.2) !important;
+        transition: all 0.3s ease !important;
     }
     
     .stButton button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 30px rgba(0, 255, 204, 0.6) !important;
-    }
-
-    @keyframes shine {
-        to { background-position: 200% center; }
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4) !important;
+        background: linear-gradient(135deg, #00ffcc 0%, #00e5ff 100%) !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -173,32 +175,32 @@ def load_luxury_auth_css():
 # =====================================================================
 
 def show_auth_page():
-    # Load safe luxury style injection
-    load_luxury_auth_css()
+    # Load safe luxury executive style injection
+    load_executive_auth_css()
     
-    # Header Neon Card Wrapper
+    # Header Panel Construction
     st.markdown('''
-        <div class="premium-header">
-            <h1 class="portal-main-title">URBAN EYE AI</h1>
-            <div class="portal-sub-text">👁️ Secure Surveillance Node Access</div>
+        <div class="executive-card">
+            <h1 class="brand-title">URBAN EYE AI</h1>
+            <div class="brand-glow-tag">⚡ Enterprise Control Center</div>
         </div>
     ''', unsafe_allow_html=True)
     
-    # Keep me logged in session widget
-    keep_logged_in = st.checkbox("🔒 Keep command node session active", value=True, key="remember_me")
+    # Secure Session Toggle
+    keep_logged_in = st.checkbox("🔒 Keep control session active on this device", value=True, key="remember_me")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["🔑 AUTHORIZED LOGIN", "📝 OFFICER REGISTRATION"])
+    tab1, tab2 = st.tabs(["🔑 SYSTEM ACCESSIBILITY", "📝 REQUEST OPERATOR CREDENTIALS"])
 
     # Email/Password Login
     with tab1:
         st.markdown("<br>", unsafe_allow_html=True)
-        email = st.text_input("📡 Clearance Email Address", key="l_email", placeholder="officer@agency.gov")
-        password = st.text_input("🗝️ Access Token / Password", type="password", key="l_password", placeholder="••••••••")
+        email = st.text_input("Clearance Email Address", key="l_email", placeholder="name@domain.com")
+        password = st.text_input("Secure Access Password", type="password", key="l_password", placeholder="••••••••••••")
         st.markdown("<br>", unsafe_allow_html=True)
         
-        if st.button("AUTHENTICATE & GRANT ENTRY", use_container_width=True):
+        if st.button("AUTHORIZE SYSTEM SECURITY", use_container_width=True):
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 st.session_state.user = res.user
@@ -208,7 +210,7 @@ def show_auth_page():
                 else:
                     st.query_params.clear()
                 
-                st.success("✅ Signature verified. Initializing secure dashboard...")
+                st.success("✅ Access sequence initiated. Syncing node logs...")
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Verification Failed: {e}")
@@ -216,16 +218,16 @@ def show_auth_page():
     # Email/Password Signup
     with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
-        s_email = st.text_input("📧 Terminal Request Email", key="s_email", placeholder="your-identity@domain.com")
-        s_password = st.text_input("🔒 Construct Master Password", type="password", key="s_password", placeholder="Minimum 6 characters")
+        s_email = st.text_input("Operator Registration Email", key="s_email", placeholder="operator@domain.com")
+        s_password = st.text_input("Create Encrypted Password", type="password", key="s_password", placeholder="Minimum 6 characters")
         st.markdown("<br>", unsafe_allow_html=True)
         
-        if st.button("GENERATE INTEL ACCOUNT", use_container_width=True):
+        if st.button("REGISTER COMMAND PROFILE", use_container_width=True):
             try:
                 supabase.auth.sign_up({"email": s_email, "password": s_password})
-                st.info("📨 Node creation code initialized! Switch to LOGIN tab to activate clearance.")
+                st.info("📨 Command node request forwarded! Switch to ACCESSIBILITY tab to log in.")
             except Exception as e:
-                st.error(f"❌ Registration Blocked: {e}")
+                st.error(f"❌ Account Allocation Denied: {e}")
 
 # =====================================================================
 # 5. CONTROL CONTROLLER (MAIN APP TRIGGER & ROUTING)
@@ -251,6 +253,3 @@ def main():
         if st.session_state.user is None:
             st.query_params.clear() 
             st.rerun()
-
-if __name__ == "__main__":
-    main()
