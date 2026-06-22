@@ -64,54 +64,106 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. HIGHLY COMPATIBLE PREMIUM CSS (FIXED DESIGN GRID)
+# 3. ULTRA-PREMIUM PURE CSS INJECTION (SAFE & STUNNING)
 # =====================================================================
-def load_fixed_auth_css():
+def load_luxury_auth_css():
     st.markdown("""
     <style>
-    /* Main Portal Heading */
-    .portal-main-title {
-        font-size: 42px;
-        font-weight: 900;
-        color: #00e5ff;
+    /* Glowing Title Box */
+    .premium-header {
+        background: linear-gradient(135deg, rgba(0, 229, 255, 0.05) 0%, rgba(0, 255, 204, 0.02) 100%);
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0px 10px 30px rgba(0, 229, 255, 0.05);
         text-align: center;
-        letter-spacing: 3px;
-        margin-bottom: 5px;
-        text-shadow: 0px 0px 15px rgba(0, 229, 255, 0.4);
+        margin-bottom: 20px;
+    }
+    
+    /* Cyber Title Neon Animation Text */
+    .portal-main-title {
+        font-size: 46px;
+        font-weight: 900;
+        letter-spacing: 5px;
+        background: linear-gradient(90deg, #ffffff, #00e5ff, #00ffcc, #ffffff);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shine 4s linear infinite;
+        margin: 0;
     }
     
     .portal-sub-text {
         color: #8892b0;
-        text-align: center;
-        font-size: 15px;
-        letter-spacing: 0.5px;
-        margin-bottom: 25px;
+        font-size: 14px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 8px;
     }
 
-    /* Input Field Labels Alignment */
+    /* Input Fields Border Styling */
+    .stTextInput input {
+        background-color: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(0, 229, 255, 0.2) !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease-in-out !important;
+    }
+    .stTextInput input:focus {
+        border-color: #00ffcc !important;
+        box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.3) !important;
+    }
+
+    /* Style Streamlit Input Labels */
     div[data-testid="stWidgetLabel"] p {
-        color: #00ffcc !important;
+        color: #00e5ff !important;
         font-weight: 600 !important;
-        font-size: 14px !important;
+        letter-spacing: 0.5px;
     }
 
-    /* Premium Action Button Customization */
+    /* Customizing Streamlit Tabs Header to look like an app dashboard */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        padding: 5px !important;
+        border-radius: 12px !important;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        font-weight: 700 !important;
+        letter-spacing: 1px !important;
+        border-radius: 8px !important;
+        color: #8892b0 !important;
+        border: none !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(0, 255, 204, 0.1) 100%) !important;
+        border: 1px solid #00e5ff !important;
+        color: #00e5ff !important;
+    }
+
+    /* Luxurious Glowing Login Button */
     .stButton button {
         background: linear-gradient(90deg, #00e5ff 0%, #00ffcc 100%) !important;
-        color: #050814 !important;
+        color: #030712 !important;
         font-weight: 800 !important;
-        font-size: 15px !important;
-        letter-spacing: 1px !important;
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
         border-radius: 12px !important;
         border: none !important;
-        padding: 12px 24px !important;
-        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2) !important;
-        transition: 0.3s ease-in-out !important;
+        padding: 14px 24px !important;
+        box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3) !important;
+        transition: all 0.3s ease-in-out !important;
     }
     
     .stButton button:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 25px rgba(0, 255, 204, 0.4) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 30px rgba(0, 255, 204, 0.6) !important;
+    }
+
+    @keyframes shine {
+        to { background-position: 200% center; }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -121,19 +173,23 @@ def load_fixed_auth_css():
 # =====================================================================
 
 def show_auth_page():
-    # Load safe CSS injection
-    load_fixed_auth_css()
+    # Load safe luxury style injection
+    load_luxury_auth_css()
     
-    # Header Section
-    st.markdown('<div class="portal-main-title">🏛️ URBAN EYE AI</div>', unsafe_allow_html=True)
-    st.markdown('<div class="portal-sub-text">National Intelligence & Surveillance Access Network</div>', unsafe_allow_html=True)
+    # Header Neon Card Wrapper
+    st.markdown('''
+        <div class="premium-header">
+            <h1 class="portal-main-title">URBAN EYE AI</h1>
+            <div class="portal-sub-text">👁️ Secure Surveillance Node Access</div>
+        </div>
+    ''', unsafe_allow_html=True)
     
-    # Keep me logged in widget
+    # Keep me logged in session widget
     keep_logged_in = st.checkbox("🔒 Keep command node session active", value=True, key="remember_me")
     
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["🔑 SYSTEM LOGIN", "📝 REGISTER OFFICER"])
+    tab1, tab2 = st.tabs(["🔑 AUTHORIZED LOGIN", "📝 OFFICER REGISTRATION"])
 
     # Email/Password Login
     with tab1:
@@ -152,7 +208,7 @@ def show_auth_page():
                 else:
                     st.query_params.clear()
                 
-                st.success("✅ Signature verified. Access Granted.")
+                st.success("✅ Signature verified. Initializing secure dashboard...")
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Verification Failed: {e}")
@@ -161,7 +217,7 @@ def show_auth_page():
     with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
         s_email = st.text_input("📧 Terminal Request Email", key="s_email", placeholder="your-identity@domain.com")
-        s_password = st.text_input("信号 Master Password", type="password", key="s_password", placeholder="Minimum 6 characters")
+        s_password = st.text_input("🔒 Construct Master Password", type="password", key="s_password", placeholder="Minimum 6 characters")
         st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("GENERATE INTEL ACCOUNT", use_container_width=True):
