@@ -402,8 +402,6 @@ def upload_section():
             cap = cv2.VideoCapture(temp_path)
             detected_all = []
             stframe = st.empty()
-            
-            # Placeholder for saving last frame containing issue evidence
             last_valid_frame = None
 
             while cap.isOpened():
@@ -432,7 +430,6 @@ def upload_section():
             
             st.success(f"🎥 Video Processing Completed ✔ | Detected Issues: {detected_all}")
             
-            # 🌟 RECONCILIATION REPORT ENGINE FOR VIDEO
             if detected_all:
                 if last_valid_frame is not None:
                     evidence_path = f"video_evidence_{datetime.now().timestamp()}.jpg"
@@ -449,18 +446,20 @@ def upload_section():
 
     elif mode == "Live Camera":
         st.warning("🔴 LIVE SURVEILLANCE ACTIVE")
-        location = st.text_input("📍 Location Tag", "Unknown Zone")
+        location = st.text_input("📍 Location Tag", "Live Active Zone")
 
-        if "last_frame" not in st.session_state:
-            st.session_state.last_frame = None
-        if "last_detected" not in st.session_state:
-            st.session_state.last_detected = []
+        # Session State Variables for Safe Frame Capture
+        if "frozen_frame" not in st.session_state:
+            st.session_state.frozen_frame = None
+        if "frozen_issues" not in st.session_state:
+            st.session_state.frozen_issues = []
 
+        # Thread-safe WebRTC Frame Processing Class
         class GovCamera(VideoTransformerBase):
             def transform(self, frame):
                 img = frame.to_ndarray(format="bgr24")
                 if model:
-                    results = model.predict(img, conf=0.5)
+                    results = model.predict(img, conf=0.5, verbose=False)
                     detected = []
 
                     for r in results:
@@ -469,26 +468,66 @@ def upload_section():
                             name = model.names[cls]
                             if name.lower() != "person":
                                 detected.append(name)
+                            
+                            # Real-time Bounding Boxes Overlays
                             x1, y1, x2, y2 = map(int, box.xyxy[0])
-                            cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,255), 2)
+                            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 255), 2)
+                            cv2.putText(img, name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
 
-                    if detected:
-                        st.session_state.last_frame = img.copy()
-                        st.session_state.last_detected = list(set(detected))
+                    # Update Streamlit App Scope Safely from WebRTC Thread Buffer
+                    st.session_state.current_active_frame = img.copy()
+                    st.session_state.current_active_issues = list(set(detected))
                 return img
 
-        webrtc_streamer(
+        # Run Live Camera Component
+        ctx = webrtc_streamer(
             key="gov-live",
             video_transformer_factory=GovCamera,
-            media_stream_constraints={"video": True, "audio": False}
+            media_stream_constraints={"video": True, "audio": False},
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
         )
 
-        if st.button("📸 CAPTURE & REPORT"):
-            if st.session_state.last_frame is not None:
-                img_path = f"live_{datetime.now().timestamp()}.jpg"
-                cv2.imwrite(img_path, st.session_state.last_frame)
-                for issue in st.session_state.last_detected:
-                    generate_report(issue, location, img_path)
+        st.markdown("---")
+        
+        # Interactive Control Buttons Layout
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("⏸️ FREEZE CURRENT DETECTION", use_container_width=True):
+                if ctx.state.playing and "current_active_frame" in st.session_state:
+                    # Lock exactly current frame state instantly
+                    st.session_state.frozen_frame = st.session_state.current_active_frame.copy()
+                    st.session_state.frozen_issues = st.session_state.current_active_issues
+                    st.toast("🎯 Frame locked and frozen safely!", icon="📸")
+                else:
+                    st.error("🔴 Camera inactive or stream not running. Pehle camera Start karein.")
+
+        with col_btn2:
+            if st.button("🔄 CLEAR FROZEN IMAGE", use_container_width=True):
+                st.session_state.frozen_frame = None
+                st.session_state.frozen_issues = []
+                st.rerun()
+
+        # Display Section for Selected Frame
+        if st.session_state.frozen_frame is not None:
+            st.markdown("### 🎯 Locked Evidence View")
+            
+            # Convert BGR to RGB for Streamlit Native rendering
+            preview_img = cv2.cvtColor(st.session_state.frozen_frame, cv2.COLOR_BGR2RGB)
+            st.image(preview_img, caption="Frozen Target Frame (Locked for review)", use_container_width=True)
+            
+            st.info(f"📁 **Identified Hazards inside this frozen frame:** {st.session_state.frozen_issues if st.session_state.frozen_issues else 'None Detected'}")
+            
+            if st.session_state.frozen_issues:
+                if st.button("📄 TRANSMIT REPORT FOR THIS FROZEN FRAME", use_container_width=True):
+                    # Write the static image context payload safely onto disk
+                    frozen_path = f"live_freeze_{int(time.time())}.jpg"
+                    cv2.imwrite(frozen_path, st.session_state.frozen_frame)
+                    
+                    # Direct integration with pre-built schema structure logs
+                    for issue in st.session_state.frozen_issues:
+                        generate_report(issue, location, frozen_path)
+            else:
+                st.warning("Is frame me koi hazard issue text ya structure found nahi hua. Dobara freeze karein jab object samne aaye.")
 
 
 # ================= ANALYTICS =================
