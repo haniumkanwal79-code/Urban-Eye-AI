@@ -24,13 +24,13 @@ supabase = st.session_state.get("supabase_client", None)
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# 🟢 home.py se exact function safely import karna
+# 🟢 Safely import your home dashboard function
 show_home_function = None
 try:
     from home import show_home
     show_home_function = show_home
 except ImportError:
-    st.warning("⚠️ 'home.py' nahi mili! Lekin login screen ko chalane ke liye bypass active hai.")
+    st.warning("⚠️ 'home.py' file not found! But the login screen is active.")
 
 # =====================================================================
 # 2. EMAIL SENDING LOGIC (UNTOUCHED)
@@ -66,34 +66,34 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         return False
 
 # =====================================================================
-# 3. COLORFUL NATIVE STYLING (SAFE & LOOKS AMAZING)
+# 3. FRESH & SIMPLE ENGLISH UI (WITH AWESOME GESTURES)
 # =====================================================================
 def show_auth_page():
-    # Colorful Title using safe Markdown colors
-    st.markdown("<h1 style='text-align: center; color: #00e5ff; font-family: sans-serif; letter-spacing: 2px;'>🏛️ URBAN EYE AI</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #00ffcc;'>🚀 Enterprise Control Center Portal</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #8892b0; font-size: 14px;'>NATIONAL INTELLIGENCE & SURVEILLANCE ACCESS NETWORK</p>", unsafe_allow_html=True)
+    # Crisp titles with a friendly pop
+    st.markdown("<h1 style='text-align: center; color: #00e5ff;'>🏛️ URBAN EYE AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #00ffcc;'>👋 Welcome to the Control Center!</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #8892b0; font-size: 14px;'>Manage your area surveillance and reports easily</p>", unsafe_allow_html=True)
     
     st.markdown("<hr style='border: 1px solid #00e5ff;'>", unsafe_allow_html=True)
     
-    # Secure Session Toggle
-    keep_logged_in = st.checkbox("🔒 Keep control session active on this device (Auto-Login)", value=True, key="remember_me")
+    # Simple Keep me logged in checkbox text
+    keep_logged_in = st.checkbox("🔒 Remember me on this device (Skip login next time!)", value=True, key="remember_me")
     
     st.write(" ")
     
-    # Colorful Accent Border with Tabs
-    tab1, tab2 = st.tabs(["🔵 SYSTEM ACCESSIBILITY", "🟢 REQUEST OPERATOR CREDENTIALS"])
+    # Modern active tabs
+    tab1, tab2 = st.tabs(["🔑 LOG IN TO YOUR ACCOUNT", "📝 CREATE NEW ACCOUNT"])
 
     # Email/Password Login
     with tab1:
-        st.markdown("<br><h4 style='color: #00e5ff;'>🔑 Authorized Officer Sign-In</h4>", unsafe_allow_html=True)
-        email = st.text_input("📡 Clearance Email Address", key="l_email", placeholder="name@domain.com")
-        password = st.text_input("🗝️ Secure Access Password", type="password", key="l_password", placeholder="••••••••••••")
+        st.markdown("<br><h4 style='color: #00e5ff;'>👋 Hello Officer! Enter your email and password:</h4>", unsafe_allow_html=True)
+        email = st.text_input("📧 Your Email Address", key="l_email", placeholder="you@example.com")
+        password = st.text_input("🔒 Your Password", type="password", key="l_password", placeholder="Type your password here...")
         st.write(" ")
         
-        if st.button("🔵 AUTHORIZE SYSTEM SECURITY", use_container_width=True):
+        if st.button("🚀 ENTER THE SYSTEM", use_container_width=True):
             if not supabase:
-                st.error("❌ Supabase client initialized nahi hai.")
+                st.error("❌ Supabase connection is down.")
                 return
             try:
                 res = supabase.auth.sign_in_with_password({"email": email, "password": password})
@@ -104,27 +104,27 @@ def show_auth_page():
                 else:
                     st.query_params.clear()
                 
-                st.success("✅ Access sequence initiated. Syncing node logs...")
+                st.success("🎉 Awesome! Credentials verified. Taking you inside...")
                 st.rerun()
             except Exception as e:
-                st.error(f"❌ Verification Failed: {e}")
+                st.error("❌ Login failed! Please check if your email or password is correct.")
 
     # Email/Password Signup
     with tab2:
-        st.markdown("<br><h4 style='color: #00ffcc;'>📝 Register New Command Profile</h4>", unsafe_allow_html=True)
-        s_email = st.text_input("Operator Registration Email", key="s_email", placeholder="operator@domain.com")
-        s_password = st.text_input("Create Encrypted Password", type="password", key="s_password", placeholder="Minimum 6 characters")
+        st.markdown("<br><h4 style='color: #00ffcc;'>🆕 New here? Fill this up to sign up:</h4>", unsafe_allow_html=True)
+        s_email = st.text_input("📧 New Email Address", key="s_email", placeholder="Type your email here...")
+        s_password = st.text_input("🔒 Choose a Strong Password", type="password", key="s_password", placeholder="At least 6 characters long")
         st.write(" ")
         
-        if st.button("🟢 REGISTER COMMAND PROFILE", use_container_width=True):
+        if st.button("✨ CREATE ACCOUNT NOW", use_container_width=True):
             if not supabase:
-                st.error("❌ Supabase client initialized nahi hai.")
+                st.error("❌ Supabase connection is down.")
                 return
             try:
                 supabase.auth.sign_up({"email": s_email, "password": s_password})
-                st.info("📨 Command node request forwarded! Switch to ACCESSIBILITY tab to log in.")
+                st.info("📨 Congratulations! Your account has been made. Now switch to the LOG IN tab above to log in! 👉")
             except Exception as e:
-                st.error(f"❌ Account Allocation Denied: {e}")
+                st.error(f"❌ Couldn't create account. Error: {e}")
 
 # =====================================================================
 # 4. CONTROL CONTROLLER (ROUTING & TRIGGER)
@@ -149,7 +149,7 @@ def main():
         if show_home_function:
             show_home_function()
         else:
-            st.success(f"Logged in as: {st.session_state.user.email}")
+            st.success(f"🥳 You are successfully logged in as: {st.session_state.user.email}")
             if st.button("Log Out 🚪"):
                 st.session_state.user = None
                 st.query_params.clear()
