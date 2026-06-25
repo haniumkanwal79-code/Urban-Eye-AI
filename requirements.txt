@@ -37,3 +37,5 @@ supabase
 opencv-python-headless
 ultralytics
 google-genai
+streamlit-folium
+folium
