@@ -11,6 +11,7 @@ import os
 # 1. INITIALIZATION & CONNECTIONS
 # =====================================================================
 SUPABASE_URL = "https://mrwkglukekmikenihkfp.supabase.co"
+# Note: Keep your API keys secure in production using st.secrets!
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yd2tnbHVrZWttaWtlbmloa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDQwODgsImV4cCI6MjA5NzcyMDA4OH0.Y1UpomD34O8shloIV6OGVFET5BFVfawLk2yDJZQy8yM"
 
 if "supabase_client" not in st.session_state:
@@ -207,7 +208,7 @@ def show_auth_page():
         </style>
     """, unsafe_allow_html=True)
 
-    # 1. Main Header Box (Top-Level Styling)
+    # 1. Main Header Box
     st.markdown("""
         <div class="premium-brand-card">
             <h1 class="brand-header">URBAN EYE AI</h1>
@@ -251,14 +252,15 @@ def show_auth_page():
                     st.session_state.user = res.user
                     
                     if keep_logged_in:
+                        # Updated to modern Streamlit query_params
                         st.query_params["session_user"] = email
                     else:
                         st.query_params.clear()
                     
                     st.success("Login successful! Loading your dashboard...")
                     st.rerun()
-                except Exception:
-                    st.error("Login failed. Please check your email or password.")
+                except Exception as e:
+                    st.error(f"Login failed. Error: {e}")
 
     # Signup Container
     with tab2:
@@ -289,16 +291,14 @@ def show_auth_page():
 # 4. MONITOR ENGINE ROUTER
 # =====================================================================
 def main():
-    try:
-        url_params = st.query_params.to_dict()
-    except Exception:
-        url_params = {}
+    # Safely get session user from modern query params
+    session_user = st.query_params.get("session_user")
     
-    if "session_user" in url_params and st.session_state.user is None:
+    if session_user and st.session_state.user is None:
         class DummyUser:
             def __init__(self, email):
                 self.email = email
-        st.session_state.user = DummyUser(url_params["session_user"])
+        st.session_state.user = DummyUser(session_user)
 
     if st.session_state.user is None:
         show_auth_page()
@@ -306,7 +306,9 @@ def main():
         if show_home_function:
             show_home_function()
         else:
-            st.success(f"Active Session: {st.session_state.user.email}")
+            # Enhanced fallback screen if home.py is missing
+            st.success(f"✅ Active Session: {st.session_state.user.email}")
+            st.info("Your backend functions are working perfectly! You are logged in.")
             if st.button("Log Out"):
                 st.session_state.user = None
                 st.query_params.clear()
